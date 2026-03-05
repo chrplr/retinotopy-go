@@ -5,9 +5,16 @@ Welcome! This repository contains a Go implementation of the **HCP Retinotopic M
 The stimulation paradigm implemented here was defined in:
 > Benson, N. C., Jamison, K. W., Arcaro, M. J., Vu, A. T., Glasser, M. F., Coalson, T. S., Van Essen, D. C., Yacoub, E., Ugurbil, K., Winawer, J., & Kay, K. (2018). The Human Connectome Project 7 Tesla retinotopy dataset: Description and population receptive field analysis. *Journal of Vision*, 18(13), 23. https://doi.org/10.1167/18.13.23
 
-It uses the [go-sdl3](https://github.com/Zyko0/go-sdl3) library for high-performance graphics and timing.
+The original stimulation program, available at <https://osf.io/bw9ec/overview>, was written in Matlab.
+
+The present version, a complete rewrite, relies on [goxpyriment](https://github.com/chrplr/goxpyriment)[goxpyriment], itself based on [go-sdl3](https://github.com/Zyko0/go-sdl3).
 
 **Warning: The timing of presentation has not been checked yet.**
+
+*If you find issues, please report them on <https://github.com/chrplr/retinotopy-go>*
+
+
+Christophe Pallier 05/03/2026
 
 ---
 
