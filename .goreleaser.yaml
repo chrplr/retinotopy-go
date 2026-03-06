@@ -12,12 +12,11 @@ before:
     - "bash -c 'unzip -o -j sdl3_win_arm64.zip SDL3.dll -d libs/windows_arm64'"
 
 builds:
-  - id: retinotopy
+  - id: unix
     env:
       - CGO_ENABLED=0
     goos:
       - linux
-      - windows
       - darwin
     goarch:
       - amd64
@@ -25,19 +24,29 @@ builds:
     main: ./retinotopy.go
     binary: retinotopy
 
-archives:
-  - id: unix
+  - id: windows
+    env:
+      - CGO_ENABLED=0
     goos:
-      - linux
-      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    main: ./retinotopy.go
+    binary: retinotopy
+
+archives:
+  - id: unix-zip
+    ids:
+      - unix
     name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
     formats: [zip]
     files:
       - assets/**/*
       - README.md
 
-  - id: windows
-    goos:
+  - id: windows-zip
+    ids:
       - windows
     name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
     formats: [zip]
@@ -49,7 +58,10 @@ archives:
         strip_parent: true
 
 nfpms:
-  - maintainer: Christophe Pallier <christophe@pallier.org>
+  - id: linux-pkgs
+    builds:
+      - unix
+    maintainer: Christophe Pallier <christophe@pallier.org>
     description: Retinotopy Experiment
     homepage: https://github.com/chrplr/retinotopy-go
     license: GPL-3.0
