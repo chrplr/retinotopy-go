@@ -26,14 +26,19 @@ builds:
     binary: retinotopy
 
 archives:
-  - format: zip
-    name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+  - name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+    formats: [zip]
     files:
       - assets/**/*
       - README.md
-      - src: "libs/{{ .Os }}_{{ .Arch }}/SDL3.dll"
-        dst: "."
-        strip_parent: true
+    overrides:
+      - goos: windows
+        files:
+          - assets/**/*
+          - README.md
+          - src: "libs/{{ .Os }}_{{ .Arch }}/SDL3.dll"
+            dst: "."
+            strip_parent: true
 
 nfpms:
   - maintainer: Christophe Pallier <christophe@pallier.org>
@@ -48,18 +53,14 @@ nfpms:
         dst: /usr/bin/retinotopy
       - src: assets/**/*
         dst: /usr/share/retinotopy/assets
-        # Preserve directory structure
       - src: README.md
         dst: /usr/share/doc/retinotopy/README.md
-
-# Optional: You can add Homebrew formulas, MSI installers (via Wix), etc.
-# But for now, portable ZIPs with bundled DLLs and standard Linux packages are a great start.
 
 checksum:
   name_template: 'checksums.txt'
 
 snapshot:
-  name_template: "{{ incpatch .Version }}-next"
+  version_template: "{{ incpatch .Version }}-next"
 
 changelog:
   sort: asc
