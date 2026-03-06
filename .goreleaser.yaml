@@ -59,7 +59,7 @@ archives:
 
 nfpms:
   - id: linux-pkgs
-    builds:
+    ids:
       - unix
     maintainer: Christophe Pallier <christophe@pallier.org>
     description: Retinotopy Experiment
@@ -68,9 +68,9 @@ nfpms:
     formats:
       - deb
       - rpm
+    # By linking to 'unix' id and NOT including the binary in contents, 
+    # GoReleaser will automatically put it in /usr/bin/retinotopy.
     contents:
-      - src: retinotopy
-        dst: /usr/bin/retinotopy
       - src: assets/**/*
         dst: /usr/share/retinotopy/assets
       - src: README.md
