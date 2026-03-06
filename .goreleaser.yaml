@@ -26,19 +26,27 @@ builds:
     binary: retinotopy
 
 archives:
-  - name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+  - id: unix
+    goos:
+      - linux
+      - darwin
+    name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
     formats: [zip]
     files:
       - assets/**/*
       - README.md
-    overrides:
-      - goos: windows
-        files:
-          - assets/**/*
-          - README.md
-          - src: "libs/{{ .Os }}_{{ .Arch }}/SDL3.dll"
-            dst: "."
-            strip_parent: true
+
+  - id: windows
+    goos:
+      - windows
+    name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+    formats: [zip]
+    files:
+      - assets/**/*
+      - README.md
+      - src: "libs/{{ .Os }}_{{ .Arch }}/SDL3.dll"
+        dst: "."
+        strip_parent: true
 
 nfpms:
   - maintainer: Christophe Pallier <christophe@pallier.org>
