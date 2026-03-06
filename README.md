@@ -15,6 +15,7 @@ The present version, a complete rewrite, relies on [goxpyriment](https://github.
 
 Christophe Pallier 05/03/2026
 
+[![DOI](https://zenodo.org/badge/1173914957.svg)](https://doi.org/10.5281/zenodo.18887912)
 
 ---
 
@@ -128,6 +129,8 @@ Customize the experiment using these flags:
 
 ---
 
+# License and Authorship
 
-Developed by [Christophe Pallier](https://github.com/chrplr) (2026). (Porting a previous Python using [Expyriment](http://expyriment.org) with the help of Gemini) 
+Developed by [Christophe Pallier](https://github.com/chrplr) (2026). (Porting a previous Python using [Expyriment](http://expyriment.org) with the help of Gemini)
+ 
 Distributed under the GNU General Public License v3.
