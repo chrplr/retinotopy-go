@@ -479,8 +479,10 @@ func main() {
 	if assetsDir == "" {
 		// Try common locations
 		candidates := []string{
-			"assets",                  // Standalone from dist root
-			"../assets",               // Standalone from linux_x64/ etc.
+			"assets",                            // Standalone from dist root
+			"../assets",                         // Standalone from linux_x64/ etc.
+			"/usr/share/retinotopy/assets",       // Linux system-wide
+			"/usr/local/share/retinotopy/assets", // Linux local system-wide
 		}
 		for _, c := range candidates {
 			// Check for something that is still external (patterns or masks)

@@ -1,0 +1,71 @@
+# .goreleaser.yaml
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+    # Download SDL3 DLLs for Windows to bundle them in the installers
+    - "bash -c 'mkdir -p libs/windows_amd64 libs/windows_arm64'"
+    - "bash -c 'if [ ! -f sdl3_win_amd64.zip ]; then curl -L https://github.com/libsdl-org/SDL/releases/download/release-3.2.4/SDL3-3.2.4-win32-x64.zip -o sdl3_win_amd64.zip; fi'"
+    - "bash -c 'unzip -o -j sdl3_win_amd64.zip SDL3.dll -d libs/windows_amd64'"
+    - "bash -c 'if [ ! -f sdl3_win_arm64.zip ]; then curl -L https://github.com/libsdl-org/SDL/releases/download/release-3.2.4/SDL3-3.2.4-win32-arm64.zip -o sdl3_win_arm64.zip; fi'"
+    - "bash -c 'unzip -o -j sdl3_win_arm64.zip SDL3.dll -d libs/windows_arm64'"
+
+builds:
+  - id: retinotopy
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    main: ./retinotopy.go
+    binary: retinotopy
+
+archives:
+  - format: zip
+    name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - assets/**/*
+      - README.md
+    # Conditional inclusion of SDL3.dll for Windows
+    extra_files:
+      - glob: libs/{{ .Os }}_{{ .Arch }}/SDL3.dll
+        # If the file exists, it will be placed in the root of the archive.
+        # This works because we only created these folders for Windows targets.
+
+nfpms:
+  - maintainer: Christophe Pallier <christophe@pallier.org>
+    description: Retinotopy Experiment
+    homepage: https://github.com/chrplr/retinotopy-go
+    license: GPL-3.0
+    formats:
+      - deb
+      - rpm
+    contents:
+      - src: retinotopy
+        dst: /usr/bin/retinotopy
+      - src: assets/**/*
+        dst: /usr/share/retinotopy/assets
+        # Preserve directory structure
+      - src: README.md
+        dst: /usr/share/doc/retinotopy/README.md
+
+# Optional: You can add Homebrew formulas, MSI installers (via Wix), etc.
+# But for now, portable ZIPs with bundled DLLs and standard Linux packages are a great start.
+
+checksum:
+  name_template: 'checksums.txt'
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
