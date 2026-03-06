@@ -19,45 +19,33 @@ Christophe Pallier 05/03/2026
 
 ---
 
-## 1. Using Pre-compiled Binaries (Fastest Start)
+## 1. Installation (Fastest Start)
 
-If you don't want to install the Go programming language, you can use the pre-compiled files in the `build/` folder.
+Go to the [Releases](https://github.com/chrplr/retinotopy-go/releases) page and download the version for your computer.
 
-### Step A: Install the SDL3 Library
-Even with a pre-compiled file, your computer needs the **SDL3 shared library** to show graphics.
+### Windows
+1.  Download the `retinotopy_windows_amd64.zip` (Standard PCs) or `retinotopy_windows_arm64.zip` (Surface Pro X, etc.).
+2.  Extract the ZIP file.
+3.  **Run:** Double-click `retinotopy.exe`. 
+    *Note: The required `SDL3.dll` is already included in the ZIP.*
 
-**Note:** You only need the *runtime* library (core SDL3). You do **NOT** need the development headers, nor do you need the extra `SDL3_image` or `SDL3_ttf` libraries, as these functions are handled internally by Go.
+### Linux (Ubuntu/Debian/Fedora)
+1.  Download the `.deb` (Ubuntu/Debian) or `.rpm` (Fedora/RedHat) package.
+2.  **Install:**
+    - **Ubuntu/Debian:** `sudo apt install ./retinotopy_linux_amd64.deb`
+    - **Fedora:** `sudo dnf install ./retinotopy_linux_amd64.rpm`
+3.  **Run:** Open your terminal and type `retinotopy -s 0 -r 1`.
+    *Note: The installer automatically handles the `SDL3` dependency and places assets in the correct system folder.*
 
-- **Ubuntu/Debian:**
-  ```bash
-  sudo apt install libsdl3-0
-  ```
-- **macOS (Homebrew):**
-  ```bash
-  brew install sdl3
-  ```
-- **Windows:**
-  Download `SDL3.dll` from the [SDL GitHub Releases](https://github.com/libsdl-org/SDL/releases) (look for the `SDL3-3.x.x-win32-x64.zip` or similar) and place it in the `build/` folder alongside the `.exe` files.
-
-### Step B: Choose the right file
-Look in the `build/` folder for the file matching your computer:
-
-- **Windows:** `retinotopy-windows-amd64.exe` (Standard PCs) or `retinotopy-windows-arm64.exe` (Surface Pro X, etc.)
-- **macOS:** `retinotopy-darwin-arm64` (Apple Silicon M1/M2/M3) or `retinotopy-darwin-amd64` (Intel Macs)
-- **Linux:** `retinotopy-linux-amd64` (Standard PCs) or `retinotopy-linux-arm64` (Raspberry Pi, etc.)
-
-### Step C: Run the Experiment
-1.  Open your **Terminal** or **PowerShell**.
-2.  Navigate to the project folder.
-3.  Run the command (replacing `<filename>` with your file):
-    - **Windows:** `.\build\<filename>.exe -s 0 -r 1`
-    - **macOS:**
-      1.  Remove the security "quarantine" flag: `xattr -d com.apple.quarantine build/<filename>`
-      2.  Make it executable: `chmod +x build/<filename>`
-      3.  Run it: `./build/<filename> -s 0 -r 1`
-    - **Linux:**
-      1.  Make it executable: `chmod +x build/<filename>`
-      2.  Run it: `./build/<filename> -s 0 -r 1`
+### macOS
+1.  Download `retinotopy_darwin_arm64.zip` (Apple Silicon M1/M2/M3) or `retinotopy_darwin_amd64.zip` (Intel Macs).
+2.  Extract the ZIP file.
+3.  **Security Fix:** Open Terminal in the extracted folder and run:
+    ```bash
+    xattr -d com.apple.quarantine retinotopy
+    chmod +x retinotopy
+    ```
+4.  **Run:** `./retinotopy -s 0 -r 1`
 
 ---
 
