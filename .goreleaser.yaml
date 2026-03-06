@@ -31,11 +31,9 @@ archives:
     files:
       - assets/**/*
       - README.md
-    # Conditional inclusion of SDL3.dll for Windows
-    extra_files:
-      - glob: libs/{{ .Os }}_{{ .Arch }}/SDL3.dll
-        # If the file exists, it will be placed in the root of the archive.
-        # This works because we only created these folders for Windows targets.
+      - src: "libs/{{ .Os }}_{{ .Arch }}/SDL3.dll"
+        dst: "."
+        strip_parent: true
 
 nfpms:
   - maintainer: Christophe Pallier <christophe@pallier.org>
