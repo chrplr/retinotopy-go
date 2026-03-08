@@ -47,21 +47,20 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y nsis icoutils imagemagick
+          sudo apt-get install -y nsis
 
       - name: Build Windows Installers (NSIS)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
-          # Create .ico from .png
-          convert retinotopy-icon.png -resize 256x256 icon_256.png
-          icotool -c -o icon.ico icon_256.png
+          # Use pre-generated icon.ico from assets/icons/
+          cp assets/icons/icon.ico .
 
           for ARCH in amd64 arm64; do
             echo "Building Windows installer for $ARCH..."
-            gh release download v$VERSION --pattern "retinotopy_windows_${ARCH}.zip" --dir "win_${ARCH}"
-            unzip "win_${ARCH}/retinotopy_windows_${ARCH}.zip" -d "win_${ARCH}/extracted"
+            gh release download v$VERSION --pattern "*windows_${ARCH}.zip" --dir "win_${ARCH}"
+            unzip win_${ARCH}/*.zip -d "win_${ARCH}/extracted"
 
             # Create NSIS script
             cat <<EOF > installer_${ARCH}.nsi
@@ -127,8 +126,8 @@ jobs:
 
           for ARCH in amd64 arm64; do
             echo "Building AppImage for $ARCH..."
-            gh release download v$VERSION --pattern "retinotopy_linux_${ARCH}.zip" --dir "linux_${ARCH}"
-            unzip "linux_${ARCH}/retinotopy_linux_${ARCH}.zip" -d "linux_${ARCH}/extracted"
+            gh release download v$VERSION --pattern "*linux_${ARCH}.zip" --dir "linux_${ARCH}"
+            unzip linux_${ARCH}/*.zip -d "linux_${ARCH}/extracted"
 
             # Prepare AppDir
             APPDIR="Retinotopy.AppDir"
@@ -155,12 +154,12 @@ jobs:
           EOF
             chmod +x $APPDIR/AppRun
 
-            # Use the new icon
-            convert retinotopy-icon.png -resize 256x256 $APPDIR/retinotopy.png
+            # Use pre-generated icon.png from assets/icons/
+            cp assets/icons/icon.png $APPDIR/retinotopy.png
 
             if [ "$ARCH" == "amd64" ]; then APP_ARCH="x86_64"; else APP_ARCH="aarch64"; fi
-            ARCH=$APP_ARCH ./appimagetool-x86_64.AppImage $APPDIR "retinotopy-v$VERSION-linux-${ARCH}.AppImage"
-            gh release upload v$VERSION "retinotopy-v$VERSION-linux-${ARCH}.AppImage"
+            ARCH=$APP_ARCH ./appimagetool-x86_64.AppImage $APPDIR "retinotopy-v$VERSION-linux-${APP_ARCH}.AppImage"
+            gh release upload v$VERSION "retinotopy-v$VERSION-linux-${APP_ARCH}.AppImage"
             rm -rf $APPDIR
           done
 
@@ -179,24 +178,10 @@ jobs:
           VERSION=${GITHUB_REF#refs/tags/v}
           brew install create-dmg
 
-          # Create .icns file
-          mkdir retinotopy.iconset
-          sips -z 16 16     retinotopy-icon.png --out retinotopy.iconset/icon_16x16.png
-          sips -z 32 32     retinotopy-icon.png --out retinotopy.iconset/icon_16x16@2x.png
-          sips -z 32 32     retinotopy-icon.png --out retinotopy.iconset/icon_32x32.png
-          sips -z 64 64     retinotopy-icon.png --out retinotopy.iconset/icon_32x32@2x.png
-          sips -z 128 128   retinotopy-icon.png --out retinotopy.iconset/icon_128x128.png
-          sips -z 256 256   retinotopy-icon.png --out retinotopy.iconset/icon_128x128@2x.png
-          sips -z 256 256   retinotopy-icon.png --out retinotopy.iconset/icon_256x256.png
-          sips -z 512 512   retinotopy-icon.png --out retinotopy.iconset/icon_256x256@2x.png
-          sips -z 512 512   retinotopy-icon.png --out retinotopy.iconset/icon_512x512.png
-          sips -z 1024 1024 retinotopy-icon.png --out retinotopy.iconset/icon_512x512@2x.png
-          iconutil -c icns retinotopy.iconset
-
           for ARCH in amd64 arm64; do
             echo "Building macOS DMG for $ARCH..."
-            gh release download v$VERSION --pattern "retinotopy_darwin_${ARCH}.zip" --dir "macos_${ARCH}"
-            unzip "macos_${ARCH}/retinotopy_darwin_${ARCH}.zip" -d "macos_${ARCH}/extracted"
+            gh release download v$VERSION --pattern "*darwin_${ARCH}.zip" --dir "macos_${ARCH}"
+            unzip macos_${ARCH}/*.zip -d "macos_${ARCH}/extracted"
 
             # Create .app bundle
             APP_NAME="Retinotopy.app"
@@ -204,7 +189,8 @@ jobs:
             mkdir -p "$APP_NAME/Contents/Resources"
             cp "macos_${ARCH}/extracted/retinotopy" "$APP_NAME/Contents/MacOS/"
             cp -r "macos_${ARCH}/extracted/assets" "$APP_NAME/Contents/MacOS/"
-            cp retinotopy.icns "$APP_NAME/Contents/Resources/AppIcon.icns"
+            # Use pre-generated icon.icns from assets/icons/
+            cp assets/icons/icon.icns "$APP_NAME/Contents/Resources/AppIcon.icns"
 
             # Simple Info.plist
             cat <<EOF > "$APP_NAME/Contents/Info.plist"
