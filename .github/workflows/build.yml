@@ -120,8 +120,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
-          # Install appimagetool
-          curl -LO https://github.com/AppImage/AppImageKit/releases/download/13/appimagetool-x86_64.AppImage
+          # Install appimagetool and FUSE (needed to run AppImages in CI)
+          sudo apt-get update
+          sudo apt-get install -y libfuse2
+          curl -Lfo appimagetool-x86_64.AppImage https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
           chmod +x appimagetool-x86_64.AppImage
 
           for ARCH in amd64 arm64; do
