@@ -12,6 +12,7 @@ import (
 	"image"
 	"image/color"
 	_ "image/png"
+	"image/png"
 	"log"
 	"os"
 	"path/filepath"
@@ -22,6 +23,7 @@ import (
 	"github.com/chrplr/goxpyriment/stimuli"
 
 	"github.com/Zyko0/go-sdl3/sdl"
+	"github.com/chrplr/retinotopy-go/generators"
 )
 
 //go:embed assets/Inconsolata.ttf
@@ -75,6 +77,41 @@ func NewRetinotopy(exp *control.Experiment, runLabel string, scaling float64) *R
 		RunLabel: runLabel,
 		Scaling:  scaling,
 	}
+}
+
+// GenerateStimuli generates stimulus PNGs on the fly, mimicking the "windows" generation in the Matlab version.
+func (r *Retinotopy) GenerateStimuli(assetsDir string) error {
+	outputDir := filepath.Join(assetsDir, "generated")
+	if err := os.MkdirAll(outputDir, 0755); err != nil {
+		return err
+	}
+
+	size := WindowWidth // 768
+
+	switch {
+	case r.RunLabel == "RETBAR1" || r.RunLabel == "RETBAR2":
+		// Example: generate a few bars
+		r.showStatus("Generating Bar stimuli...")
+		for i := 0; i < 10; i++ {
+			offset := float64(i-5) * 50.0
+			imgs, _ := generators.Bar_GenerateCheckerBar1D(size, 100.0, 0.0, offset, 12, 3, 0.0)
+			f, _ := os.Create(filepath.Join(outputDir, fmt.Sprintf("bar_%d.png", i)))
+			png.Encode(f, imgs[0])
+			f.Close()
+		}
+
+	case r.RunLabel == "RETCCW" || r.RunLabel == "RETCW":
+		r.showStatus("Generating Wedge stimuli...")
+		for i := 0; i < 36; i++ {
+			angle := float64(i * 10)
+			imgs, _ := generators.ECC_GenerateCheckerBoard1D(size, 0, 384, 45, angle, 24, 8, 0)
+			f, _ := os.Create(filepath.Join(outputDir, fmt.Sprintf("wedge_%d.png", i)))
+			png.Encode(f, imgs[0])
+			f.Close()
+		}
+	}
+	r.showStatus("Generation complete.")
+	return nil
 }
 
 func (r *Retinotopy) showStatus(msg string) error {
@@ -468,6 +505,7 @@ func main() {
 	subjID := flag.Int("s", 0, "Subject ID")
 	runID := flag.Int("r", 1, "Run ID (1-6)")
 	develop := flag.Bool("d", false, "Develop mode (windowed display)")
+	genOnly := flag.Bool("gen", false, "Generate stimuli only")
 	scaling := flag.Float64("scaling", 1.0, "Scaling factor for stimuli (e.g., 0.5, 1.5)")
 	assetsDirFlag := flag.String("assets", "", "Path to assets directory")
 	// Keep -F for backward compatibility if needed, but we'll prioritize -d
@@ -484,6 +522,12 @@ func main() {
 			"/usr/share/retinotopy/assets",       // Linux system-wide
 			"/usr/local/share/retinotopy/assets", // Linux local system-wide
 		}
+
+		// Check if we are in an AppImage
+		if appDir := os.Getenv("APPDIR"); appDir != "" {
+			candidates = append([]string{filepath.Join(appDir, "usr/share/retinotopy/assets")}, candidates...)
+		}
+
 		for _, c := range candidates {
 			// Check for something that is still external (patterns or masks)
 			if _, err := os.Stat(filepath.Join(c, "patterns")); err == nil {
@@ -545,6 +589,14 @@ func main() {
 	}
 
 	retino := NewRetinotopy(exp, runLabel, *scaling)
+
+	if *genOnly {
+		if err := retino.GenerateStimuli(assetsDir); err != nil {
+			log.Fatal(err)
+		}
+		return // Exit after generation
+	}
+
 	if err := retino.LoadStimuli(*subjID, *runID, assetsDir); err != nil {
 		log.Fatal(err)
 	}

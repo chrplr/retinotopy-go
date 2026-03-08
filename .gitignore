@@ -2,3 +2,9 @@
 /data
 /dist/
 /build/
+
+# AppImage building
+linuxdeploy*
+AppDir/
+*.AppImage
+/Retinotopy-master

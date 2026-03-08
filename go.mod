@@ -5,7 +5,10 @@ go 1.25.7
 require (
 	github.com/Zyko0/go-sdl3 v0.0.0-20260125144524-02de3d449cb1
 	github.com/chrplr/goxpyriment v0.2.0
+	github.com/chrplr/retinotopy-go/generators v0.0.0
 )
+
+replace github.com/chrplr/retinotopy-go/generators => ./Stim-Generators
 
 require (
 	github.com/Zyko0/purego-gen v0.0.0-20250727121216-3bcd331a1e0c // indirect
