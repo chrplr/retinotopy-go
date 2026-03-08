@@ -1,21 +1,20 @@
 # Retinotopy Experiment (Go Implementation)
 
+![](retino-stim_small.png)
+
 Welcome! This repository contains a Go implementation of the **HCP Retinotopic Mapping experiment** described in: 
 
 > Benson, N. C., Jamison, K. W., Arcaro, M. J., Vu, A. T., Glasser, M. F., Coalson, T. S., Van Essen, D. C., Yacoub, E., Ugurbil, K., Winawer, J., & Kay, K. (2018). The Human Connectome Project 7 Tesla retinotopy dataset: Description and population receptive field analysis. *Journal of Vision*, 18(13), 23. https://doi.org/10.1167/18.13.23
 
-The original stimulation program, available at <https://osf.io/bw9ec/overview>, was written in Matlab.
 
-The present version, a complete rewrite, relies on [goxpyriment](https://github.com/chrplr/goxpyriment), itself based on [go-sdl3](https://github.com/Zyko0/go-sdl3).
+This app relies on [goxpyriment](https://github.com/chrplr/goxpyriment).
 
 **Warning: The timing of presentation has not been checked yet.**
 
 *If you find issues, please report them on <https://github.com/chrplr/retinotopy-go>*
 
 
-Christophe Pallier 05/03/2026
-
-[![DOI](https://zenodo.org/badge/1173914957.svg)](https://doi.org/10.5281/zenodo.18887912)
+Christophe Pallier 05/03/2026 [![DOI](https://zenodo.org/badge/1173914957.svg)](https://doi.org/10.5281/zenodo.18887912)
 
 ---
 
@@ -111,6 +110,7 @@ Customize the experiment using these flags:
 
 ## See also:
 
+* <https://osf.io/bw9ec/overview> (original version)
 * <https://github.com/Goffaux-Lab/psychopy-retinotopy>
 * <https://github.com/hiroshiban/Retinotopy>
 * <https://github.com/egaffincahn/RetinotopicMapping>
