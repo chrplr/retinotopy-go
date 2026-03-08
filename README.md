@@ -18,37 +18,41 @@ Christophe Pallier 05/03/2026 [![DOI](https://zenodo.org/badge/1173914957.svg)](
 
 ---
 
-## 1. Installation (Fastest Start)
+## 1. Installation (Recommended)
 
-Go to the [Releases](https://github.com/chrplr/retinotopy-go/releases) page and download the version for your computer.
+Go to the [Releases](https://github.com/chrplr/retinotopy-go/releases) page and download the latest version for your operating system.
 
 ### Windows
-1.  Download the `retinotopy_windows_amd64.zip` (Standard PCs) or `retinotopy_windows_arm64.zip` (Surface Pro X, etc.).
-2.  Extract the ZIP file.
-3.  **Run:** Double-click `retinotopy.exe`. 
-    *Note: The required `SDL3.dll` is already included in the ZIP.*
-
-### Linux (Ubuntu/Debian/Fedora)
-1.  Download the `.deb` (Ubuntu/Debian) or `.rpm` (Fedora/RedHat) package.
-2.  **Install:**
-    - **Ubuntu/Debian:** `sudo apt install ./retinotopy_linux_amd64.deb`
-    - **Fedora:** `sudo dnf install ./retinotopy_linux_amd64.rpm`
-3.  **Run:** Open your terminal and type `retinotopy -s 0 -r 1`.
-    *Note: The installer automatically handles the `SDL3` dependency and places assets in the correct system folder.*
+1.  Download `retinotopy-vX.X.X-windows-amd64-setup.exe`.
+2.  **Run the Installer:** Double-click the downloaded file and follow the instructions.
+3.  **Launch:** You will find a **Retinotopy** shortcut in your Start Menu and on your Desktop.
+    *Note: The installer automatically includes all required libraries and assets.*
 
 ### macOS
-1.  Download `retinotopy_darwin_arm64.zip` (Apple Silicon M1/M2/M3) or `retinotopy_darwin_amd64.zip` (Intel Macs).
-2.  Extract the ZIP file.
-3.  **Security Fix:** Open Terminal in the extracted folder and run:
-    ```bash
-    xattr -d com.apple.quarantine retinotopy
-    chmod +x retinotopy
-    ```
-4.  **Run:** `./retinotopy -s 0 -r 1`
+1.  Download `retinotopy-vX.X.X-macos-arm64.dmg` (for M1/M2/M3 chips) or `retinotopy-vX.X.X-macos-amd64.dmg` (for Intel Macs).
+2.  **Install:** Open the DMG file and drag the **Retinotopy** icon to your **Applications** folder.
+3.  **Launch:** Open your Applications folder and double-click **Retinotopy**.
+    *Note: If macOS prevents it from opening, Right-click the app and select 'Open', then click 'Open' again in the security dialog.*
+
+### Linux
+1.  Download `retinotopy-vX.X.X-linux-x86_64.AppImage`.
+2.  **Make Executable:** Right-click the file, go to **Properties** > **Permissions**, and check **"Allow executing file as program"**.
+3.  **Launch:** Double-click the AppImage file to run it.
+    *Note: This is a portable format that includes all dependencies and assets.*
 
 ---
 
-## 2. Building from Source (For Developers)
+## 2. Advanced: Portable ZIPs & Packages
+
+For users who prefer not to use an installer, we still provide ZIP archives and system packages:
+
+- **Windows ZIP:** Extract and run `retinotopy.exe` (includes `SDL3.dll`).
+- **Linux Packages:** `.deb` (Ubuntu/Debian) and `.rpm` (Fedora) are available.
+- **macOS ZIP:** Requires manual security fixes (see older release notes).
+
+---
+
+## 3. Running the Experiment
 
 If you want to modify the code or compile it yourself, follow these steps.
 
