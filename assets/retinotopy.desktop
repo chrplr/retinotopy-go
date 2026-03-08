@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Retinotopy
+Exec=retinotopy
+Icon=retinotopy
+Categories=Science;
+Comment=Retinotopy Experiment
+Terminal=false

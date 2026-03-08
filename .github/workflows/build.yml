@@ -138,15 +138,8 @@ jobs:
             cp linux_${ARCH}/extracted/retinotopy $APPDIR/usr/bin/
             cp -r linux_${ARCH}/extracted/assets $APPDIR/usr/share/retinotopy/
 
-            # Create .desktop file
-            cat <<EOF > $APPDIR/retinotopy.desktop
-            [Desktop Entry]
-            Type=Application
-            Name=Retinotopy
-            Exec=retinotopy
-            Icon=retinotopy
-            Categories=Science;Education;
-          EOF
+            # Use pre-generated desktop file from assets/
+            cp assets/retinotopy.desktop $APPDIR/
 
             # Create AppRun
             cat <<EOF > $APPDIR/AppRun
