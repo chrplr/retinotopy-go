@@ -45,4 +45,3 @@ done
 
 echo ""
 echo "Build complete. Binaries are in the '${BUILD_DIR}' directory."
-echo "Note: The SDL3 shared library must be available on the target system to run these binaries."
