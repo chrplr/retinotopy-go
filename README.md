@@ -2,127 +2,144 @@
 
 ![](retino-stim_small.png)
 
-Welcome! This repository contains a Go implementation of the **HCP Retinotopic Mapping experiment** described in: 
+This app runs the **HCP Retinotopic Mapping experiment** — a visual stimulus protocol used in brain imaging (fMRI) studies to map how the visual cortex is organized. Subjects watch a series of flickering checkerboard patterns (bars, rotating wedges, expanding/contracting rings) while occasionally pressing a key when a central dot changes color. The recorded timing data is used to reconstruct a map of the visual field on the brain.
+
+It is also a working example of how to use the [goxpyriment](https://github.com/chrplr/goxpyriment) library to build standalone experiment executables in Go.
+
+The experiment is based on:
 
 > Benson, N. C., Jamison, K. W., Arcaro, M. J., Vu, A. T., Glasser, M. F., Coalson, T. S., Van Essen, D. C., Yacoub, E., Ugurbil, K., Winawer, J., & Kay, K. (2018). The Human Connectome Project 7 Tesla retinotopy dataset: Description and population receptive field analysis. *Journal of Vision*, 18(13), 23. https://doi.org/10.1167/18.13.23
 
+> **Warning: Stimulus timing has not been independently validated yet. Use with caution in actual experiments.**
 
-This app relies on [goxpyriment](https://github.com/chrplr/goxpyriment).
+*Found a bug? Please report it at <https://github.com/chrplr/retinotopy-go/issues>*
 
-**Warning: The timing of presentation has not been checked yet.**
-
-*If you find issues, please report them on <https://github.com/chrplr/retinotopy-go>*
-
-
-Christophe Pallier 05/03/2026 [![DOI](https://zenodo.org/badge/1173914957.svg)](https://doi.org/10.5281/zenodo.18887912)
+Christophe Pallier, 05/03/2026 [![DOI](https://zenodo.org/badge/1173914957.svg)](https://doi.org/10.5281/zenodo.18887912)
 
 ---
 
 ## 1. Installation (Recommended)
 
-Go to the [Releases](https://github.com/chrplr/retinotopy-go/releases) page and download the latest version for your operating system.
+Go to the [Releases](https://github.com/chrplr/retinotopy-go/releases) page and download the latest version for your operating system. All required files are bundled — no extra software needed.
 
 ### Windows
-1.  Download `retinotopy-vX.X.X-windows-amd64-setup.exe`.
-2.  **Run the Installer:** Double-click the downloaded file and follow the instructions.
-3.  **Launch:** You will find a **Retinotopy** shortcut in your Start Menu and on your Desktop.
-    *Note: The installer automatically includes all required libraries and assets.*
+1. Download `retinotopy-vX.X.X-windows-amd64-setup.exe`.
+2. Double-click the file and follow the installer steps.
+3. A **Retinotopy** shortcut will appear in your Start Menu and on your Desktop.
 
 ### macOS
-1.  Download `retinotopy-vX.X.X-macos-arm64.dmg` (for M1/M2/M3 chips) or `retinotopy-vX.X.X-macos-amd64.dmg` (for Intel Macs).
-2.  **Install:** Open the DMG file and drag the **Retinotopy** icon to your **Applications** folder.
-3.  **Launch:** Open your Applications folder and double-click **Retinotopy**.
-    *Note: If macOS prevents it from opening, Right-click the app and select 'Open', then click 'Open' again in the security dialog.*
+1. Download `retinotopy-vX.X.X-macos-arm64.dmg` (for M1/M2/M3/M4 chips) or `retinotopy-vX.X.X-macos-amd64.dmg` (for Intel Macs).
+2. Open the DMG file and drag **Retinotopy** to your **Applications** folder.
+3. Double-click to launch. If macOS blocks it, right-click the app, select **Open**, then click **Open** again in the security dialog.
 
 ### Linux
-1.  Download `retinotopy-vX.X.X-linux-x86_64.AppImage`.
-2.  **Make Executable:** Right-click the file, go to **Properties** > **Permissions**, and check **"Allow executing file as program"**.
-3.  **Launch:** Double-click the AppImage file to run it.
-    *Note: This is a portable format that includes all dependencies and assets.*
+1. Download `retinotopy-vX.X.X-linux-x86_64.AppImage`.
+2. Make it executable: right-click the file → **Properties** → **Permissions** → check **"Allow executing file as program"**.
+3. Double-click to run.
 
 ---
 
-## 2. Advanced: Portable ZIPs & Packages
+## 2. Alternative: ZIP archives and system packages
 
-For users who prefer not to use an installer, we still provide ZIP archives and system packages:
+If you prefer not to use an installer:
 
-- **Windows ZIP:** Extract and run `retinotopy.exe` (includes `SDL3.dll`).
-- **Linux Packages:** `.deb` (Ubuntu/Debian) and `.rpm` (Fedora) are available.
-- **macOS ZIP:** Requires manual security fixes (see older release notes).
+- **Windows ZIP:** Extract and run `retinotopy.exe` (SDL3.dll is included in the archive).
+- **Linux packages:** `.deb` (Ubuntu/Debian) and `.rpm` (Fedora/RHEL) are available on the Releases page.
 
 ---
 
 ## 3. Running the Experiment
 
-If you want to modify the code or compile it yourself, follow these steps.
+### Controls
 
-### Prerequisites
-1.  **Install Go:** [go.dev/doc/install](https://go.dev/doc/install)
-2.  **Install SDL3:** (See Step A above). 
-    *Note: Because this project uses `purego`, you do **not** need C compilers or SDL3 development headers (`-dev` packages) to compile.*
+| Action | Effect |
+| :--- | :--- |
+| **Any key or mouse click** | Register response when the fixation dot changes color |
+| **ESC** | Exit and save data |
 
-### Getting Started
-1.  **Clone the Repository:**
-    ```bash
-    git clone https://github.com/yourusername/retinotopy-go.git
-    cd retinotopy-go
-    ```
-2.  **Download Dependencies:**
-    ```bash
-    go mod download
-    ```
+### Choosing a run
 
-### Running/Building
-- **To Run directly:** `go run retinotopy.go -s 0 -r 1`
-- **To Build your own executable:** `go build -o my_retinotopy`
+Launch the app with a subject ID (`-s`) and run number (`-r`):
 
----
+```
+retinotopy -s 1 -r 3
+```
 
-## 3. Command Line Options
+The six available runs are:
 
-Customize the experiment using these flags:
+| `-r` | Name | Stimulus |
+| :--- | :--- | :--- |
+| 1 | RETBAR1 | Swiping bars (first pass) |
+| 2 | RETBAR2 | Swiping bars (second pass) |
+| 3 | RETCCW | Counter-clockwise rotating wedge |
+| 4 | RETCW | Clockwise rotating wedge |
+| 5 | RETEXP | Expanding circles |
+| 6 | RETCON | Contracting circles |
+
+### All command-line options
 
 | Flag | Description | Default |
 | :--- | :--- | :--- |
-| `-s <id>` | **Subject ID** (used for data logging and stimuli order) | `0` |
-| `-r <id>` | **Run ID** (1 to 6, see below) | `1` |
-| `-d` | **Development Mode**: Runs in a 900x900 window instead of fullscreen. | `false` |
-| `--scaling <f>` | **Scaling Factor**: Adjusts the size of stimuli (e.g., `1.5` for 150% size). | `1.0` |
-| `-assets <path>`| **Assets Directory**: Path to the `assets/` folder. | `./assets` |
+| `-s <id>` | Subject ID (used for data logging and stimulus order) | `0` |
+| `-r <id>` | Run number (1–6, see above) | `1` |
+| `-d` | Development mode: runs in a 900×900 window instead of fullscreen | off |
+| `--scaling <f>` | Scale stimulus size (e.g. `1.5` = 150%) | `1.0` |
+| `-assets <path>` | Path to the `assets/` folder | `./assets` |
 
-### Available Runs (`-r`)
-1. `RETBAR1` / 2. `RETBAR2` (Swiping Bars)
-3. `RETCCW` (Counter-Clockwise Wedge) / 4. `RETCW` (Clockwise Wedge)
-5. `RETEXP` (Expanding Circles) / 6. `RETCON` (Contracting Circles)
+### Output data
+
+Results are saved as `.xpd` files in a `data/` folder next to the executable, with frame-by-frame timing and response event logs.
 
 ---
 
-## 4. Controls & Data
+## 4. Building from Source
 
--   **ESC:** Exit and save data.
--   **Any Key/Mouse Click:** Press when the center fixation dot changes color.
--   **Data:** Results are saved as `.xpd` files in the `data/` directory with frame-by-frame timing and event logs.
+Only needed if you want to modify the code or compile it yourself.
+
+### Prerequisites
+
+1. **Install Go:** [go.dev/doc/install](https://go.dev/doc/install)
+2. **Install SDL3** (runtime library only — no C compiler or development headers needed):
+   - **Windows:** Download `SDL3.dll` from the [SDL releases page](https://github.com/libsdl-org/SDL/releases) and place it next to the executable.
+   - **macOS:** `brew install sdl3`
+   - **Linux (Debian/Ubuntu):** `sudo apt install libsdl3-0` (or build from source if your distro doesn't package it yet)
+
+### Build steps
+
+```bash
+git clone https://github.com/chrplr/retinotopy-go.git
+cd retinotopy-go
+go mod download
+go run retinotopy.go -s 0 -r 1     # run directly
+go build -o retinotopy              # build an executable
+```
+
+To cross-compile for all platforms at once:
+
+```bash
+./build.sh
+```
 
 ---
 
 ## Troubleshooting
 
-- **"SDL3 not found":** Re-check Step A. The library must be installed or the DLL must be in the folder.
-- **"Assets not found":** Run the command from the root of the project directory.
+- **"SDL3 not found":** The SDL3 runtime library is missing. Pre-built installers and AppImages bundle it automatically; if you are using a ZIP archive or building from source, see the SDL3 installation step above.
+- **"Assets not found":** Run the command from the root of the project directory, or use the `-assets` flag to point to the correct path.
 
 ---
 
-## See also:
+## See also
 
-* <https://osf.io/bw9ec/overview> (original version)
-* <https://github.com/Goffaux-Lab/psychopy-retinotopy>
-* <https://github.com/hiroshiban/Retinotopy>
-* <https://github.com/egaffincahn/RetinotopicMapping>
+- <https://osf.io/bw9ec/overview> (original Python/Expyriment version)
+- <https://github.com/Goffaux-Lab/psychopy-retinotopy>
+- <https://github.com/hiroshiban/Retinotopy>
+- <https://github.com/egaffincahn/RetinotopicMapping>
 
 ---
 
-# License and Authorship
+## License and Authorship
 
-Developed by [Christophe Pallier](https://github.com/chrplr) (2026). (Porting a previous Python using [Expyriment](http://expyriment.org) with the help of Gemini)
- 
-Distributed under the GNU General Public License v3.
+Developed by [Christophe Pallier](https://github.com/chrplr) (2026), porting a previous Python/[Expyriment](http://expyriment.org) version with the help of Gemini.
+
+Distributed under the [GNU General Public License v3](https://www.gnu.org/licenses/gpl-3.0.html).
