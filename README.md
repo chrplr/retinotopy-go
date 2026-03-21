@@ -125,13 +125,6 @@ To cross-compile for all platforms at once:
 
 ---
 
-## Troubleshooting
-
-- **"SDL3 not found":** The SDL3 runtime library is missing. Pre-built installers and AppImages bundle it automatically; if you are using a ZIP archive or building from source, see the SDL3 installation step above.
-- **"Assets not found":** Run the command from the root of the project directory, or use the `-assets` flag to point to the correct path.
-
----
-
 ## See also
 
 - <https://osf.io/bw9ec/overview> (original Python/Expyriment version)
