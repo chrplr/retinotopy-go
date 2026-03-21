@@ -58,6 +58,7 @@ jobs:
           cp assets/icons/icon.ico .
 
           for ARCH in amd64 arm64; do
+            if [ "$ARCH" == "amd64" ]; then ARTIFACT_ARCH="x86_64"; else ARTIFACT_ARCH="arm64"; fi
             echo "Building Windows installer for $ARCH..."
             gh release download v$VERSION --pattern "*windows_${ARCH}.zip" --dir "win_${ARCH}"
             unzip win_${ARCH}/*.zip -d "win_${ARCH}/extracted"
@@ -68,7 +69,7 @@ jobs:
             !include "x64.nsh"
 
             Name "Retinotopy v$VERSION ($ARCH)"
-            OutFile "retinotopy-v$VERSION-windows-${ARCH}-setup.exe"
+            OutFile "retinotopy-windows-${ARTIFACT_ARCH}-setup.exe"
             InstallDir "\$PROGRAMFILES64\Retinotopy"
 
             !define MUI_ICON "icon.ico"
@@ -112,7 +113,7 @@ jobs:
           EOF
 
             makensis installer_${ARCH}.nsi
-            gh release upload v$VERSION "retinotopy-v$VERSION-windows-${ARCH}-setup.exe"
+            gh release upload v$VERSION "retinotopy-windows-${ARTIFACT_ARCH}-setup.exe"
           done
 
       - name: Build Linux AppImages
@@ -153,8 +154,8 @@ jobs:
             cp assets/icons/icon.png $APPDIR/retinotopy.png
 
             if [ "$ARCH" == "amd64" ]; then APP_ARCH="x86_64"; else APP_ARCH="aarch64"; fi
-            ARCH=$APP_ARCH ./appimagetool-x86_64.AppImage $APPDIR "retinotopy-v$VERSION-linux-${APP_ARCH}.AppImage"
-            gh release upload v$VERSION "retinotopy-v$VERSION-linux-${APP_ARCH}.AppImage"
+            ARCH=$APP_ARCH ./appimagetool-x86_64.AppImage $APPDIR "retinotopy-linux-${APP_ARCH}.AppImage"
+            gh release upload v$VERSION "retinotopy-linux-${APP_ARCH}.AppImage"
             rm -rf $APPDIR
           done
 
@@ -173,6 +174,7 @@ jobs:
           VERSION=${GITHUB_REF#refs/tags/v}
 
           for ARCH in amd64 arm64; do
+            if [ "$ARCH" == "amd64" ]; then ARTIFACT_ARCH="x86_64"; else ARTIFACT_ARCH="arm64"; fi
             echo "Building macOS app bundle for $ARCH..."
             gh release download v$VERSION --pattern "*darwin_${ARCH}.zip" --dir "macos_${ARCH}"
             unzip macos_${ARCH}/*.zip -d "macos_${ARCH}/extracted"
@@ -212,8 +214,8 @@ jobs:
             codesign --force --deep --sign - "$APP_NAME"
 
             # Zip the .app so users can extract and drag it wherever they want
-            zip -r "retinotopy-v$VERSION-macos-${ARCH}.zip" "$APP_NAME"
+            zip -r "retinotopy-macos-${ARTIFACT_ARCH}-app.zip" "$APP_NAME"
 
-            gh release upload v$VERSION "retinotopy-v$VERSION-macos-${ARCH}.zip"
+            gh release upload v$VERSION "retinotopy-macos-${ARTIFACT_ARCH}-app.zip"
             rm -rf "$APP_NAME"
           done

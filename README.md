@@ -20,15 +20,15 @@ Christophe Pallier, 05/03/2026 [![DOI](https://zenodo.org/badge/1173914957.svg)]
 
 ## 1. Installation (Recommended)
 
-Go to the [Releases](https://github.com/chrplr/retinotopy-go/releases) page and download the latest version for your operating system. All required files are bundled — no extra software needed.
+Download the latest installer for your operating system directly below. All required files are bundled — no extra software needed.
 
 ### Windows
-1. Download `retinotopy-vX.X.X-windows-amd64-setup.exe`.
+1. Download [retinotopy-windows-x86_64-setup.exe](https://github.com/chrplr/retinotopy-go/releases/latest/download/retinotopy-windows-x86_64-setup.exe) (Intel/AMD) or [retinotopy-windows-arm64-setup.exe](https://github.com/chrplr/retinotopy-go/releases/latest/download/retinotopy-windows-arm64-setup.exe) (ARM).
 2. Double-click the file and follow the installer steps.
 3. A **Retinotopy** shortcut will appear in your Start Menu and on your Desktop.
 
 ### macOS
-1. Download `retinotopy-vX.X.X-macos-arm64.zip` (for M1/M2/M3/M4 chips) or `retinotopy-vX.X.X-macos-amd64.zip` (for Intel Macs).
+1. Download [retinotopy-macos-arm64-app.zip](https://github.com/chrplr/retinotopy-go/releases/latest/download/retinotopy-macos-arm64-app.zip) (M1/M2/M3/M4) or [retinotopy-macos-x86_64-app.zip](https://github.com/chrplr/retinotopy-go/releases/latest/download/retinotopy-macos-x86_64-app.zip) (Intel).
 2. Extract the archive and drag **Retinotopy.app** to your **Applications** folder (or anywhere you like).
 3. Double-click to launch.
 
@@ -36,7 +36,7 @@ Go to the [Releases](https://github.com/chrplr/retinotopy-go/releases) page and 
 > macOS may show a security warning the first time you open the app. See [macOS installation and security](https://chrplr.github.io/note-about-macos-unsigned-apps) for an explanation and step-by-step instructions to bypass it.
 
 ### Linux
-1. Download `retinotopy-vX.X.X-linux-x86_64.AppImage`.
+1. Download [retinotopy-linux-x86_64.AppImage](https://github.com/chrplr/retinotopy-go/releases/latest/download/retinotopy-linux-x86_64.AppImage) (Intel/AMD) or [retinotopy-linux-aarch64.AppImage](https://github.com/chrplr/retinotopy-go/releases/latest/download/retinotopy-linux-aarch64.AppImage) (ARM).
 2. Make it executable: right-click the file → **Properties** → **Permissions** → check **"Allow executing file as program"**.
 3. Double-click to run.
 
@@ -44,7 +44,7 @@ Go to the [Releases](https://github.com/chrplr/retinotopy-go/releases) page and 
 
 ## 2. Alternative: ZIP archives and system packages
 
-If you prefer not to use an installer:
+If you prefer not to use an installer, download a raw binary archive from the [Releases page](https://github.com/chrplr/retinotopy-go/releases).
 
 - **Windows ZIP:** Extract and run `retinotopy.exe` (SDL3.dll is included in the archive).
 - **Linux packages:** `.deb` (Ubuntu/Debian) and `.rpm` (Fedora/RHEL) are available on the Releases page.
