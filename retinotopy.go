@@ -99,7 +99,7 @@ func (r *Retinotopy) LoadStimuli(subjID int, runID int) error {
 	}
 	r.Patterns = make([][]byte, 100)
 	for i := 1; i <= 100; i++ {
-		path := fmt.Sprintf("assets/stimuli_png/patterns/pattern_%04d.png", i)
+		path := fmt.Sprintf("assets/patterns/pattern_%04d.png", i)
 		data, err := loadRawRGB(path)
 		if err != nil {
 			return fmt.Errorf("failed to load pattern %d: %v", i, err)
@@ -138,7 +138,7 @@ func (r *Retinotopy) LoadStimuli(subjID int, runID int) error {
 	}
 	r.Masks = make([][]byte, numMasks)
 	for i := 1; i <= numMasks; i++ {
-		path := fmt.Sprintf("assets/stimuli_png/masks/%s/%s_%04d.png", maskDir, maskPrefix, i)
+		path := fmt.Sprintf("assets/masks/%s/%s_%04d.png", maskDir, maskPrefix, i)
 		data, err := loadRawGray(path)
 		if err != nil {
 			return fmt.Errorf("failed to load mask %d: %v", i, err)
@@ -155,7 +155,7 @@ func (r *Retinotopy) LoadStimuli(subjID int, runID int) error {
 	if err := r.showStatus("Loading fixation grid..."); err != nil {
 		return err
 	}
-	gridData, err := assetsFS.ReadFile("assets/stimuli_png/fixationGrid.png")
+	gridData, err := assetsFS.ReadFile("assets/fixationGrid.png")
 	if err != nil {
 		return fmt.Errorf("failed to read embedded fixation grid: %v", err)
 	}
@@ -439,28 +439,28 @@ func (r *Retinotopy) Run() error {
 		// 6. Data Logging
 		endTime := clock.GetTime()
 		isLate := endTime > targetTime+FrameDuration
-		r.Exp.Data.Add([]interface{}{
-			r.RunLabel, i, targetTime - startTime, frameStartTime - startTime, endTime - startTime,
-			endTime - frameStartTime, isLate, maskID, patternID, dotColorID,
-		})
+		r.Exp.Data.Add(
+			r.RunLabel, i, targetTime-startTime, frameStartTime-startTime, endTime-startTime,
+			endTime-frameStartTime, isLate, maskID, patternID, dotColorID,
+		)
 
 		// 7. Handle Inputs (Fixation Task)
 		// Subject should press a key or mouse button when dot color changes.
 		key, btn, err := r.Exp.HandleEvents()
-		if err == control.EndLoop {
+		if control.IsEndLoop(err) {
 			return control.EndLoop
 		}
 		if key != 0 {
-			r.Exp.Data.Add([]interface{}{
-				r.RunLabel, "keypress", targetTime - startTime, clock.GetTime() - startTime, 0,
+			r.Exp.Data.Add(
+				r.RunLabel, "keypress", targetTime-startTime, clock.GetTime()-startTime, 0,
 				0, false, 0, 0, key,
-			})
+			)
 		}
 		if btn != 0 {
-			r.Exp.Data.Add([]interface{}{
-				r.RunLabel, "mousepress", targetTime - startTime, clock.GetTime() - startTime, 0,
+			r.Exp.Data.Add(
+				r.RunLabel, "mousepress", targetTime-startTime, clock.GetTime()-startTime, 0,
 				0, false, 0, 0, btn,
-			})
+			)
 		}
 
 		// 8. Wait for next frame
@@ -488,20 +488,12 @@ func (r *Retinotopy) updateCombinedTexture(patternID, maskID int) {
 }
 
 func main() {
-	subjID := flag.Int("s", 0, "Subject ID")
 	runID := flag.Int("r", 1, "Run ID (1-6)")
-	develop := flag.Bool("d", false, "Developer mode (windowed 1024x1024)")
 	scaling := flag.Float64("scaling", 1.0, "Scaling factor for stimuli (e.g., 0.5, 1.5)")
-	fullscreenFlag := flag.Bool("F", false, "Force Fullscreen (redundant if -d is not used)")
-	flag.Parse()
+	_ = flag.Bool("F", false, "Force Fullscreen (redundant if -d is not used)")
 
-	width, height, fullscreen := 0, 0, true
-	if *develop {
-		width, height, fullscreen = 1024, 1024, false
-	}
-	if *fullscreenFlag {
-		fullscreen = true
-	}
+	exp := control.NewExperimentFromFlags("Retinotopy", BackgroundColor, control.White, 32)
+	defer exp.End()
 
 	labels := map[int]string{
 		1: "RETBAR1", 2: "RETBAR2", 3: "RETCCW", 4: "RETCW", 5: "RETEXP", 6: "RETCON",
@@ -511,17 +503,10 @@ func main() {
 		log.Fatalf("Invalid run ID: %d", *runID)
 	}
 
-	exp := control.NewExperiment("Retinotopy", width, height, fullscreen, BackgroundColor, control.White, 32)
-	exp.SubjectID = *subjID
-	if err := exp.Initialize(); err != nil {
-		log.Fatal(err)
-	}
-	defer exp.End()
-
 	exp.Mouse.ShowCursor(false)
 
 	retino := NewRetinotopy(exp, runLabel, *scaling)
-	if err := retino.LoadStimuli(*subjID, *runID); err != nil {
+	if err := retino.LoadStimuli(exp.SubjectID, *runID); err != nil {
 		log.Fatal(err)
 	}
 
@@ -535,7 +520,7 @@ func main() {
 		return control.EndLoop
 	})
 
-	if err != nil && err != control.EndLoop {
+	if err != nil && !control.IsEndLoop(err) {
 		log.Fatal(err)
 	}
 }

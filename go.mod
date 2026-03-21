@@ -2,7 +2,7 @@ module github.com/chrplr/retinotopy-go
 
 go 1.25.7
 
-require github.com/chrplr/goxpyriment v0.7.0
+require github.com/chrplr/goxpyriment v0.7.8
 
 require (
 	github.com/Zyko0/go-sdl3 v0.0.0-20260125144524-02de3d449cb1 // indirect
