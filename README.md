@@ -28,9 +28,12 @@ Go to the [Releases](https://github.com/chrplr/retinotopy-go/releases) page and 
 3. A **Retinotopy** shortcut will appear in your Start Menu and on your Desktop.
 
 ### macOS
-1. Download `retinotopy-vX.X.X-macos-arm64.dmg` (for M1/M2/M3/M4 chips) or `retinotopy-vX.X.X-macos-amd64.dmg` (for Intel Macs).
-2. Open the DMG file and drag **Retinotopy** to your **Applications** folder.
-3. Double-click to launch. If macOS blocks it, right-click the app, select **Open**, then click **Open** again in the security dialog.
+1. Download `retinotopy-vX.X.X-macos-arm64.zip` (for M1/M2/M3/M4 chips) or `retinotopy-vX.X.X-macos-amd64.zip` (for Intel Macs).
+2. Extract the archive and drag **Retinotopy.app** to your **Applications** folder (or anywhere you like).
+3. Double-click to launch.
+
+> [!WARNING]
+> macOS may show a security warning the first time you open the app. See [macOS installation and security](https://chrplr.github.io/note-about-macos-unsigned-apps) for an explanation and step-by-step instructions to bypass it.
 
 ### Linux
 1. Download `retinotopy-vX.X.X-linux-x86_64.AppImage`.

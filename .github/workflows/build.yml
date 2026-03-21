@@ -166,15 +166,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Build macOS DMGs
+      - name: Build macOS App Bundles (zip)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
-          brew install create-dmg
 
           for ARCH in amd64 arm64; do
-            echo "Building macOS DMG for $ARCH..."
+            echo "Building macOS app bundle for $ARCH..."
             gh release download v$VERSION --pattern "*darwin_${ARCH}.zip" --dir "macos_${ARCH}"
             unzip macos_${ARCH}/*.zip -d "macos_${ARCH}/extracted"
 
@@ -209,18 +208,12 @@ jobs:
             </plist>
           EOF
 
-            # Create DMG
-            create-dmg \
-              --volname "Retinotopy $VERSION" \
-              --window-pos 200 120 \
-              --window-size 800 400 \
-              --icon-size 100 \
-              --icon "Retinotopy.app" 200 190 \
-              --hide-extension "Retinotopy.app" \
-              --app-drop-link 600 185 \
-              "retinotopy-v$VERSION-macos-${ARCH}.dmg" \
-              "Retinotopy.app"
+            # Ad-hoc sign to prevent macOS Gatekeeper "damaged" error
+            codesign --force --deep --sign - "$APP_NAME"
 
-            gh release upload v$VERSION "retinotopy-v$VERSION-macos-${ARCH}.dmg"
+            # Zip the .app so users can extract and drag it wherever they want
+            zip -r "retinotopy-v$VERSION-macos-${ARCH}.zip" "$APP_NAME"
+
+            gh release upload v$VERSION "retinotopy-v$VERSION-macos-${ARCH}.zip"
             rm -rf "$APP_NAME"
           done
