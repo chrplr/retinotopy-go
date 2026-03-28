@@ -146,7 +146,7 @@ jobs:
             cat <<EOF > $APPDIR/AppRun
             #!/bin/bash
             HERE="\$(dirname "\$(readlink -f "\${0}")")"
-            exec "\${HERE}/usr/bin/retinotopy" -assets "\${HERE}/usr/share/retinotopy/assets" "\$@"
+            exec "\${HERE}/usr/bin/retinotopy" "\$@"
           EOF
             chmod +x $APPDIR/AppRun
 

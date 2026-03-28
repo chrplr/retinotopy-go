@@ -1,4 +1,5 @@
 // Copyright (2026) Christophe Pallier <christophe@pallier.org>
+// Co-authored by Claude Sonnet 4.6
 // Distributed under the GNU General Public License v3.
 
 package main
@@ -15,10 +16,11 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/chrplr/goxpyriment/control"
 	"github.com/chrplr/goxpyriment/clock"
+	"github.com/chrplr/goxpyriment/control"
 	"github.com/chrplr/goxpyriment/io"
 	"github.com/chrplr/goxpyriment/stimuli"
+	"github.com/chrplr/goxpyriment/units"
 )
 
 //go:embed assets
@@ -481,46 +483,126 @@ func (r *Retinotopy) updateCombinedTexture(patternID, maskID int) {
 		r.PixelBuffer[i*4] = pattern[i*3]     // R
 		r.PixelBuffer[i*4+1] = pattern[i*3+1] // G
 		r.PixelBuffer[i*4+2] = pattern[i*3+2] // B
-		r.PixelBuffer[i*4+3] = mask[i]         // A
+		r.PixelBuffer[i*4+3] = mask[i]        // A
 	}
 
 	r.CombinedTexture.Update(nil, r.PixelBuffer, WindowWidth*4)
 }
 
 func main() {
-	runID := flag.Int("r", 1, "Run ID (1-6)")
-	scaling := flag.Float64("scaling", 1.0, "Scaling factor for stimuli (e.g., 0.5, 1.5)")
-	_ = flag.Bool("F", false, "Force Fullscreen (redundant if -d is not used)")
+	cliRunID := flag.Int("r", 1, "default Run ID (1-6) shown in the UI")
+	flag.Parse()
 
-	exp := control.NewExperimentFromFlags("Retinotopy", BackgroundColor, control.White, 32)
-	defer exp.End()
-
-	labels := map[int]string{
-		1: "RETBAR1", 2: "RETBAR2", 3: "RETCCW", 4: "RETCW", 5: "RETEXP", 6: "RETCON",
-	}
-	runLabel, ok := labels[*runID]
-	if !ok {
-		log.Fatalf("Invalid run ID: %d", *runID)
+	runLabels := []string{"RETBAR1", "RETBAR2", "RETCCW", "RETCW", "RETEXP", "RETCON"}
+	defaultRunLabel := "RETBAR1"
+	if *cliRunID >= 1 && *cliRunID <= 6 {
+		defaultRunLabel = runLabels[*cliRunID-1]
 	}
 
-	exp.Mouse.ShowCursor(false)
+	// ── Step 1: collect participant + monitor info via GUI dialog ─────────────
+	runField := control.InfoField{
+		Name:    "run_id",
+		Label:   "Run",
+		Default: defaultRunLabel,
+		Type:    control.FieldSelect,
+		Options: runLabels,
+	}
+	fields := make([]control.InfoField, 0, len(control.StandardFields)+2)
+	fields = append(fields, control.StandardFields...)
+	fields = append(fields, runField, control.FullscreenField)
+	info, err := control.GetParticipantInfo("Retinotopy", fields)
+	if err != nil {
+		log.Fatalf("Info dialog: %v", err)
+	}
 
-	retino := NewRetinotopy(exp, runLabel, *scaling)
-	if err := retino.LoadStimuli(exp.SubjectID, *runID); err != nil {
+	runLabel := info["run_id"]
+	runID := 0
+	for i, l := range runLabels {
+		if l == runLabel {
+			runID = i + 1
+			break
+		}
+	}
+	if runID == 0 {
+		log.Fatalf("Invalid run selected: %s", runLabel)
+	}
+
+	subjectID, err := strconv.Atoi(info["subject_id"])
+	if err != nil {
+		log.Printf("Warning: subject_id %q is not an integer, defaulting to 0", info["subject_id"])
+		subjectID = 0
+	}
+	widthCm, err := strconv.ParseFloat(info["screen_width_cm"], 64)
+	if err != nil || widthCm < 10 || widthCm > 300 {
+		log.Fatalf("Invalid screen_width_cm %q", info["screen_width_cm"])
+	}
+	distanceCm, err := strconv.ParseFloat(info["viewing_distance_cm"], 64)
+	if err != nil || distanceCm < 20 || distanceCm > 500 {
+		log.Fatalf("Invalid viewing_distance_cm %q", info["viewing_distance_cm"])
+	}
+	fullscreen := info["fullscreen"] == "true"
+	width, height := 0, 0
+	if !fullscreen {
+		width, height = 1024, 768
+	}
+
+	exp := control.NewExperiment("Retinotopy", width, height, fullscreen, BackgroundColor, control.White, 32)
+	exp.SubjectID = subjectID
+	exp.Info = info
+	if err := exp.Initialize(); err != nil {
 		log.Fatal(err)
 	}
+	defer exp.End()
+	exp.Mouse.ShowCursor(false)
 
-	err := exp.Run(func() error {
-		if err := retino.Instructions(); err != nil {
-			return err
+	runErr := exp.Run(func() error {
+		// ── Step 2: compute scaling so max eccentricity = 15° ─────────────────
+		widthPx := exp.Screen.Width
+		heightPx := exp.Screen.Height
+		heightCm := widthCm * float64(heightPx) / float64(widthPx)
+		mon := units.NewMonitor(widthCm, heightCm, widthPx, heightPx, distanceCm)
+
+		const stimHalfPx = 384.0 // 768 / 2
+		scaling := mon.DegToPx(15.0) / stimHalfPx
+
+		// Clamp: the 768×768 stimulus must not exceed the screen.
+		maxScaling := float64(min(widthPx, heightPx)) / 768.0
+		if scaling > maxScaling {
+			scaling = maxScaling
 		}
-		if err := retino.Run(); err != nil {
-			return err
+
+		// ── Step 3: record monitor calibration in the data file ───────────────
+		actualEcc := mon.PxToDeg(stimHalfPx * scaling)
+		exp.Data.WriteComment("--MONITOR INFO")
+		exp.Data.WriteComment(fmt.Sprintf("m %s", mon.String()))
+		exp.Data.WriteComment(fmt.Sprintf("m scaling: %.4f", scaling))
+		exp.Data.WriteComment(fmt.Sprintf("m max_eccentricity_deg: %.2f", actualEcc))
+		statusMsg := fmt.Sprintf(
+			"Monitor: %s\n\nScaling: %.3f  |  Max eccentricity: %.1f°\n\nPress any key to continue.",
+			mon.String(), scaling, actualEcc)
+		status := stimuli.NewTextBox(statusMsg, 800, control.Point(0, 0), control.White)
+		if err2 := exp.Show(status); err2 != nil {
+			return err2
+		}
+		if _, err2 := exp.Keyboard.Wait(); err2 != nil {
+			return err2
+		}
+
+		// ── Step 4: load stimuli and run ──────────────────────────────────────
+		retino := NewRetinotopy(exp, runLabel, scaling)
+		if err2 := retino.LoadStimuli(exp.SubjectID, runID); err2 != nil {
+			return err2
+		}
+		if err2 := retino.Instructions(); err2 != nil {
+			return err2
+		}
+		if err2 := retino.Run(); err2 != nil {
+			return err2
 		}
 		return control.EndLoop
 	})
 
-	if err != nil && !control.IsEndLoop(err) {
-		log.Fatal(err)
+	if runErr != nil && !control.IsEndLoop(runErr) {
+		log.Fatal(runErr)
 	}
 }
