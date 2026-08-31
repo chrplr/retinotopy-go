@@ -22,7 +22,7 @@ goreleaser build --snapshot --clean  # uses .goreleaser.yaml
 # CGO_ENABLED=0 is required — SDL3 is loaded dynamically via purego (no C compiler needed)
 ```
 
-**CLI flags:** `-r <run_id 1-6>`, `-s <subject_id>`, `-age`, `-gender`, `-handedness`, `-screen-width <cm>`, `-viewing-distance <cm>`, `-refresh-rate <Hz>`, `-fullscreen`, `-display <id, 0 = primary>`. All of them pre-fill the info dialog, and `-headless` (from goxpyriment) skips the dialog and returns those values directly. Caveat: `GetParticipantInfo` prefers a value cached in `~/.cache/goxpyriment/last_session.json` over a flag-supplied default for every field except `subject_id`, so a flag only takes effect for fields absent from that cache.
+**CLI flags:** `-r <run_id 1-6>`, `-s <subject_id>`, `-age`, `-gender`, `-handedness`, `-screen-width <cm>`, `-viewing-distance <cm>`, `-refresh-rate <Hz>`, `-fullscreen`, `-display <id, 0 = primary>`. All of them pre-fill the info dialog, and `-headless` (from goxpyriment) skips the dialog and returns those values directly. Note that `GetParticipantInfo` prefers a value cached in `~/.cache/goxpyriment/last_session.json` over a flag-supplied default (every field except `subject_id`), so interactively a flag only sets what the dialog starts from. Under `-headless` there is no dialog to correct it, so flags passed explicitly on the command line override the cache — see the `flag.Visit` block in `main()` — and each override is logged.
 
 **Run types (1–6):** bars (×2), CCW wedge, CW wedge, expanding circles, contracting circles.
 

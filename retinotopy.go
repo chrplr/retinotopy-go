@@ -489,6 +489,31 @@ func (r *Retinotopy) updateCombinedTexture(patternID, maskID int) {
 	r.CombinedTexture.Update(nil, r.PixelBuffer, WindowWidth*4)
 }
 
+// flagField maps each CLI flag to the info-dialog field it fills, so that
+// -headless can tell which fields the experimenter set explicitly.
+var flagField = map[string]string{
+	"r":                "run_id",
+	"s":                "subject_id",
+	"age":              "age",
+	"gender":           "gender",
+	"handedness":       "handedness",
+	"screen-width":     "screen_width_cm",
+	"viewing-distance": "viewing_distance_cm",
+	"refresh-rate":     "refresh_rate_hz",
+	"fullscreen":       "fullscreen",
+	"display":          "display_id",
+}
+
+// headless reports whether -headless was passed. The flag belongs to
+// goxpyriment's control package, which registers it on the default FlagSet but
+// keeps the variable unexported, so it has to be read back by name. A missing
+// flag means the library stopped registering it: treat that as not headless,
+// which only costs a dialog.
+func headless() bool {
+	f := flag.Lookup("headless")
+	return f != nil && f.Value.String() == "true"
+}
+
 func main() {
 	cliRunID := flag.Int("r", 1, "default Run ID (1-6) shown in the UI")
 	cliSubjectID := flag.String("s", "", "subject ID (pre-fills the UI field)")
@@ -515,7 +540,6 @@ func main() {
 	runField := control.InfoField{
 		Name:    "run_id",
 		Label:   "Run",
-		Default: defaultRunLabel,
 		Type:    control.FieldSelect,
 		Options: runLabels,
 	}
@@ -525,8 +549,10 @@ func main() {
 
 	// Applied by field name rather than by position, so reordering either the
 	// library's field sets or the appends above cannot silently mis-assign a
-	// default. run_id is absent here: it is set on runField from -r.
+	// default. This map is the single source for every field's default, and is
+	// consulted again below when -headless makes explicit flags authoritative.
 	cliDefaults := map[string]string{
+		"run_id":              defaultRunLabel,
 		"subject_id":          *cliSubjectID,
 		"age":                 *cliAge,
 		"gender":              *cliGender,
@@ -546,6 +572,29 @@ func main() {
 	info, err := control.GetParticipantInfo("Retinotopy", fields)
 	if err != nil {
 		log.Fatalf("Info dialog: %v", err)
+	}
+
+	// GetParticipantInfo prefers a value cached in the goxpyriment session
+	// cache over a field's Default, for every field except subject_id. In an
+	// interactive run that is harmless — the dialog shows the cached value and
+	// the experimenter can correct it — but under -headless there is no dialog,
+	// so a flag that was actually typed would be discarded in silence and the
+	// run would proceed with the previous session's geometry. Explicit flags
+	// therefore win in headless mode, and each override is logged so that a
+	// scripted session leaves a record of what it changed.
+	if headless() {
+		flag.Visit(func(f *flag.Flag) {
+			field, ok := flagField[f.Name]
+			if !ok {
+				return
+			}
+			want, ok := cliDefaults[field]
+			if !ok || info[field] == want {
+				return
+			}
+			log.Printf("-%s: overriding cached %s %q with %q", f.Name, field, info[field], want)
+			info[field] = want
+		})
 	}
 
 	runLabel := info["run_id"]
