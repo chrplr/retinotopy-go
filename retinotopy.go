@@ -491,6 +491,15 @@ func (r *Retinotopy) updateCombinedTexture(patternID, maskID int) {
 
 func main() {
 	cliRunID := flag.Int("r", 1, "default Run ID (1-6) shown in the UI")
+	cliSubjectID := flag.String("s", "", "subject ID (pre-fills the UI field)")
+	cliAge := flag.String("age", "", "participant age (pre-fills the UI field)")
+	cliGender := flag.String("gender", "", "participant gender, e.g. M / F / NB (pre-fills the UI field)")
+	cliHandedness := flag.String("handedness", "R", "participant handedness: R or L (pre-fills the UI field)")
+	cliScreenWidth := flag.Float64("screen-width", 30, "screen width in cm (pre-fills the UI field)")
+	cliViewingDistance := flag.Float64("viewing-distance", 50, "viewing distance in cm (pre-fills the UI field)")
+	cliRefreshRate := flag.Float64("refresh-rate", 60, "display refresh rate in Hz (pre-fills the UI field)")
+	cliFullscreen := flag.Bool("fullscreen", true, "start in fullscreen mode (pre-fills the UI field)")
+	cliDisplay := flag.String("display", "0", "display ID, 0 = primary monitor (pre-fills the UI field)")
 	flag.Parse()
 
 	runLabels := []string{"RETBAR1", "RETBAR2", "RETCCW", "RETCW", "RETEXP", "RETCON"}
@@ -500,6 +509,9 @@ func main() {
 	}
 
 	// ── Step 1: collect participant + monitor info via GUI dialog ─────────────
+	// The field set comes from goxpyriment so that labels and types stay in
+	// step with the library; the CLI flags only supply the defaults the dialog
+	// starts from (and, under -headless, the values it returns outright).
 	runField := control.InfoField{
 		Name:    "run_id",
 		Label:   "Run",
@@ -507,9 +519,30 @@ func main() {
 		Type:    control.FieldSelect,
 		Options: runLabels,
 	}
-	fields := make([]control.InfoField, 0, len(control.StandardFields)+2)
+	fields := make([]control.InfoField, 0, len(control.StandardFields)+3)
 	fields = append(fields, control.StandardFields...)
-	fields = append(fields, runField, control.FullscreenField)
+	fields = append(fields, runField, control.FullscreenField, control.DisplayField)
+
+	// Applied by field name rather than by position, so reordering either the
+	// library's field sets or the appends above cannot silently mis-assign a
+	// default. run_id is absent here: it is set on runField from -r.
+	cliDefaults := map[string]string{
+		"subject_id":          *cliSubjectID,
+		"age":                 *cliAge,
+		"gender":              *cliGender,
+		"handedness":          *cliHandedness,
+		"screen_width_cm":     fmt.Sprintf("%g", *cliScreenWidth),
+		"viewing_distance_cm": fmt.Sprintf("%g", *cliViewingDistance),
+		"refresh_rate_hz":     fmt.Sprintf("%g", *cliRefreshRate),
+		"fullscreen":          fmt.Sprintf("%v", *cliFullscreen),
+		"display_id":          *cliDisplay,
+	}
+	for i := range fields {
+		if d, ok := cliDefaults[fields[i].Name]; ok {
+			fields[i].Default = d
+		}
+	}
+
 	info, err := control.GetParticipantInfo("Retinotopy", fields)
 	if err != nil {
 		log.Fatalf("Info dialog: %v", err)
@@ -548,6 +581,7 @@ func main() {
 
 	exp := control.NewExperiment("Retinotopy", width, height, fullscreen, BackgroundColor, control.White, 32)
 	exp.SubjectID = subjectID
+	exp.ScreenNumber = control.DisplayIDFromInfo(info)
 	exp.Info = info
 	if err := exp.Initialize(); err != nil {
 		log.Fatal(err)
