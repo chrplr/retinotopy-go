@@ -4,6 +4,11 @@
 /dist
 /build
 
+# WebAssembly bundle (built by .github/workflows/pages.yml, or locally with
+# wasmsdl -- see the "Play in your browser" section of README.md)
+/_build/
+/dist-wasm/
+
 # AppImage building
 linuxdeploy*
 AppDir/

@@ -47,6 +47,24 @@ Embedded assets in `assets/`:
 - `StimuliOrder/maskOrderRetinotopy.csv` + per-subject CSVs — frame-by-frame stimulus order
 - `Inconsolata.ttf`, `fixationGrid.png`, `icons/`
 
+## Browser (WebAssembly) build
+
+`GOOS=js GOARCH=wasm` is a supported target, deployed to GitHub Pages by
+`.github/workflows/pages.yml`. Two constraints, both verified by breaking them:
+
+- **Upstream go-sdl3 cannot build for js** (`undefined: sdl.WaitAnimationFrame`).
+  The build needs `chrplr/go-sdl3-wasm` (branch `wasm-render-fixes`), applied as
+  a `replace` **in CI only** — committing it breaks the native release builds.
+- **`control.GetParticipantInfo` panics in the browser** (`not implemented on
+  js`, from `SDL_GetCurrentRenderOutputSize`): the dialog opens a second SDL
+  window and shuts SDL down afterwards. `browser_js.go` therefore forces
+  `-headless`, which takes GetParticipantInfo's early return (no SDL at all),
+  and synthesizes the flags from the page URL — goxpyriment's own
+  `platformPrepareFlags` does this but only inside `NewExperimentFromFlags`,
+  which this program does not use.
+
+The bundle is ~135 MB because every stimulus PNG is embedded.
+
 ## Release / CI
 
 `.goreleaser.yaml` and `.github/workflows/build.yml` handle multi-platform releases (Linux amd64/arm64, macOS amd64/arm64, Windows amd64/arm64) including deb/rpm packages, macOS DMG, and Windows NSIS installer. Triggered on `v*` tags.

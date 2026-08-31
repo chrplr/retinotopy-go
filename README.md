@@ -140,6 +140,43 @@ To cross-compile for all platforms at once:
 ./build.sh
 ```
 
+### Browser (WebAssembly) build
+
+The experiment also builds for `GOOS=js GOARCH=wasm` and is deployed to GitHub
+Pages by [`.github/workflows/pages.yml`](.github/workflows/pages.yml) on every
+push to `main`.
+
+Two things make it work, and both are easy to trip over:
+
+- **It needs the `chrplr/go-sdl3-wasm` fork**, not upstream go-sdl3, which lacks
+  the js bindings (building against upstream fails with `undefined:
+  sdl.WaitAnimationFrame`). The `replace` lives in CI only and **must never be
+  committed** — it would break the native release builds for everyone.
+- **The setup dialog cannot run in a browser.** It opens a second SDL window and
+  shuts SDL down when it closes, which a single-canvas page does not support, so
+  the browser build forces `-headless` and takes its settings from the page URL
+  instead (`?s=7&r=3&screen-width=40`). See `browser_js.go`.
+
+To build and serve the bundle locally:
+
+```bash
+git clone -b wasm-render-fixes https://github.com/chrplr/go-sdl3-wasm ../go-sdl3-wasm
+go mod edit -replace github.com/Zyko0/go-sdl3=../go-sdl3-wasm   # NEVER commit this
+(cd ../go-sdl3-wasm && go run ./cmd/wasmsdl serve \
+    -html "$PWD/../retinotopy-go/web/index.html" "$PWD/../retinotopy-go")
+# → http://localhost:8080/
+go mod edit -dropreplace github.com/Zyko0/go-sdl3                # before committing
+```
+
+Check `git diff go.mod` before committing — a leftover `replace` points the
+published module at a path that exists only on your machine.
+
+> **The bundle is about 135 MB** (112 MB gzipped), nearly all of it `main.wasm`:
+> the 100 pattern and 1680 mask PNGs are embedded in the binary. That is a long
+> first load for a participant, and it is the price of embedding the stimuli.
+> Browser frame timing is also not the desktop build's — use a native binary for
+> anything whose onsets matter, and treat the browser build as a demonstration.
+
 ---
 
 ## See also

@@ -1,0 +1,183 @@
+<!doctype html>
+<!--
+  Copyright (2026) Christophe Pallier <christophe@pallier.org>
+  Distributed under the GNU General Public License v3.
+
+  Launcher page for the WebAssembly build. The bundle is assembled by
+  wasmsdl (see .github/workflows/pages.yml), which copies this file in
+  alongside main.wasm, sdl.js and wasm_exec.js.
+-->
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Retinotopy</title>
+    <style>
+      html, body { margin: 0; min-height: 100%; background: #1a1a1a; color: #ccc;
+                   font-family: system-ui, sans-serif; }
+      body { display: flex; flex-direction: column; align-items: center;
+             justify-content: center; gap: 16px; padding: 24px; box-sizing: border-box; }
+      /* SDL's web backend takes the window size from the canvas CSS box, so it
+         must not collapse to 0. The Go side sets it at window creation. */
+      #canvas { display: block; max-width: 100%; }
+      body:not(.running) #canvas { display: none; }
+      body.running #setup, body.running #hint { display: none; }
+      #setup { max-width: 34rem; }
+      h1 { font-size: 1.3rem; margin: 0 0 0.4rem; color: #eee; }
+      p { line-height: 1.5; }
+      label { display: block; margin: 10px 0; }
+      label span { display: inline-block; min-width: 15rem; }
+      input, select { background: #2a2a2a; color: #eee; border: 1px solid #555;
+                      border-radius: 4px; padding: 5px 7px; font: inherit; width: 8rem; }
+      button { margin-top: 14px; padding: 9px 20px; font: inherit; cursor: pointer;
+               background: #2d5fa8; color: #fff; border: 0; border-radius: 5px; }
+      button:disabled { background: #444; cursor: default; }
+      .warn { background: #33270f; border-left: 3px solid #b8860b; padding: 10px 14px;
+              font-size: 0.9rem; }
+      #progress { font-variant-numeric: tabular-nums; }
+      a { color: #8ab4f8; }
+      #hint { font-size: 0.85rem; opacity: 0.7; text-align: center; }
+    </style>
+  </head>
+  <body>
+    <div id="setup">
+      <h1>Retinotopic mapping</h1>
+      <p>Fixate the centre dot and press any key the moment it changes colour.</p>
+
+      <p class="warn"><strong>Large download.</strong> This experiment embeds
+        1&nbsp;780 stimulus images, so the page has to fetch about 135&nbsp;MB
+        before it can start. Use a wired or fast connection, and expect the
+        first load to take a while. Your browser will cache it afterwards.</p>
+
+      <p class="warn"><strong>Not for scanner or timing-critical use.</strong>
+        Browser frame timing is not the desktop build's. Use the native binary
+        for any session whose onsets matter.</p>
+
+      <label><span>Subject ID</span><input id="subject" value="0" /></label>
+      <label><span>Run</span>
+        <select id="run">
+          <option value="1">1 — RETBAR1 (bars, first pass)</option>
+          <option value="2">2 — RETBAR2 (bars, second pass)</option>
+          <option value="3">3 — RETCCW (counter-clockwise wedge)</option>
+          <option value="4">4 — RETCW (clockwise wedge)</option>
+          <option value="5">5 — RETEXP (expanding circles)</option>
+          <option value="6">6 — RETCON (contracting circles)</option>
+        </select>
+      </label>
+      <label><span>Screen width (cm)</span><input id="screenWidth" value="30" /></label>
+      <label><span>Viewing distance (cm)</span><input id="viewingDistance" value="50" /></label>
+
+      <p>Screen width and viewing distance set the stimulus scale (15° maximum
+        eccentricity). Measure them — the defaults are a placeholder, and a run
+        recorded at the wrong visual angle looks perfectly normal afterwards.</p>
+
+      <button id="start">Download and start</button>
+      <p id="progress"></p>
+    </div>
+
+    <canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex="0"></canvas>
+    <p id="hint"><a href="https://github.com/chrplr/retinotopy-go">Source code and native binaries</a></p>
+
+    <script type="text/javascript">
+      var canvasElement = document.getElementById('canvas');
+      canvasElement.addEventListener('webglcontextlost', (e) => {
+        e.preventDefault();
+        document.getElementById('progress').textContent =
+          'WebGL context lost — reload the page to start again.';
+      }, false);
+      var Module = {
+        print(...a) { console.log(...a); },
+        printErr(...a) { console.error(...a); },
+        canvas: canvasElement,
+      };
+    </script>
+    <script type="text/javascript" src="sdl.js"></script>
+    <script type="text/javascript" src="wasm_exec.js"></script>
+    <script>
+      const startButton = document.getElementById('start');
+      const progress = document.getElementById('progress');
+
+      // Pre-fill from the URL, so a prepared link (?s=7&r=3) still works.
+      const initial = new URLSearchParams(location.search);
+      for (const [param, id] of [['s', 'subject'], ['r', 'run'],
+                                 ['screen-width', 'screenWidth'],
+                                 ['viewing-distance', 'viewingDistance']]) {
+        const v = initial.get(param);
+        if (v !== null) document.getElementById(id).value = v;
+      }
+
+      startButton.addEventListener('click', async () => {
+        startButton.disabled = true;
+
+        // The Go side reads its flags from location.search at startup
+        // (prepareFlags in browser_js.go), so write the settings there before
+        // running. replaceState changes the query without reloading.
+        const params = new URLSearchParams();
+        params.set('s', document.getElementById('subject').value.trim() || '0');
+        params.set('r', document.getElementById('run').value);
+        params.set('screen-width', document.getElementById('screenWidth').value.trim() || '30');
+        params.set('viewing-distance', document.getElementById('viewingDistance').value.trim() || '50');
+        // A fixed canvas rather than fullscreen: the browser has no second
+        // monitor to choose and no exclusive mode to enter, and a predictable
+        // 1024x768 keeps the recorded geometry meaningful.
+        params.set('fullscreen', 'false');
+        history.replaceState(null, '', location.pathname + '?' + params.toString());
+
+        // Fetch by hand rather than with instantiateStreaming: at ~135 MB a
+        // silent wait looks indistinguishable from a hung page, and streaming
+        // instantiation cannot report how far along it is.
+        let bytes;
+        try {
+          const resp = await fetch('main.wasm');
+          if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+          const total = Number(resp.headers.get('content-length')) || 0;
+          const reader = resp.body.getReader();
+          const chunks = [];
+          let received = 0;
+          for (;;) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            chunks.push(value);
+            received += value.length;
+            const mb = (received / 1048576).toFixed(0);
+            progress.textContent = total
+              ? `Downloading… ${mb} MB of ${(total / 1048576).toFixed(0)} MB`
+              : `Downloading… ${mb} MB`;
+          }
+          bytes = new Uint8Array(received);
+          let at = 0;
+          for (const c of chunks) { bytes.set(c, at); at += c.length; }
+        } catch (err) {
+          progress.textContent = `Download failed: ${err.message}. Reload to retry.`;
+          startButton.disabled = false;
+          return;
+        }
+
+        progress.textContent = 'Starting…';
+        const go = new Go();
+        const result = await WebAssembly.instantiate(bytes.buffer, go.importObject);
+
+        // Lay the canvas out and focus it: SDL measures the canvas CSS box at
+        // window creation, and key events only reach it once it has focus.
+        document.body.classList.add('running');
+        canvasElement.focus();
+        void canvasElement.offsetWidth; // force layout before SDL measures it
+
+        // Run on a fresh task rather than inside this handler: the Go program
+        // blocks its main goroutine for the whole session, and the wasm
+        // scheduler can only park it (returning to the JS event loop, so DOM
+        // events keep firing and SDL keeps seeing them) when it is not nested
+        // inside another callback's stack.
+        setTimeout(() => go.run(result.instance), 0);
+      });
+
+      // Keys only reach SDL while the canvas has focus. Losing it to a stray
+      // click otherwise looks like the experiment has frozen.
+      canvasElement.addEventListener('blur', () => {
+        if (document.body.classList.contains('running')) {
+          progress.textContent = 'Click the stimulus to give it keyboard focus again.';
+        }
+      });
+    </script>
+  </body>
+</html>

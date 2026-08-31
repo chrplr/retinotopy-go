@@ -525,6 +525,9 @@ func main() {
 	cliRefreshRate := flag.Float64("refresh-rate", 60, "display refresh rate in Hz (pre-fills the UI field)")
 	cliFullscreen := flag.Bool("fullscreen", true, "start in fullscreen mode (pre-fills the UI field)")
 	cliDisplay := flag.String("display", "0", "display ID, 0 = primary monitor (pre-fills the UI field)")
+	// No-op on desktop. In the browser there is no command line: this reads the
+	// flags out of the page URL and forces -headless. See browser_js.go.
+	prepareFlags()
 	flag.Parse()
 
 	runLabels := []string{"RETBAR1", "RETBAR2", "RETCCW", "RETCW", "RETEXP", "RETCON"}
