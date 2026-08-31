@@ -101,6 +101,13 @@ changed in the dialog itself.
 | `-display <id>` | Monitor to open on, `0` = primary | `0` |
 | `-fullscreen` | Start fullscreen; `-fullscreen=false` gives a 1024×768 window | `true` |
 | `-headless` | Skip the dialog and run with the values above | off |
+| `-lead-in <s>` | Seconds of the run's opening blank period to keep; negative keeps the CSV's own | `2` |
+
+`-lead-in` is not a dialog field. Every stimulus order opens with a
+fixation-only baseline — 16 s for the bars, 22 s for the wedges and rings —
+before the first checkerboard appears, which is a long wait when checking the
+stimuli, so those frames are trimmed to 2 s by default. **Pass `-lead-in=-1` for
+a scanning session**: the dropped frames are baseline the analysis expects.
 
 Screen width and viewing distance are what set the stimulus size: the
 checkerboard is scaled so its maximum eccentricity is 15° of visual angle,

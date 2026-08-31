@@ -14,6 +14,7 @@ import (
 	"image/color"
 	_ "image/png"
 	"log"
+	"math"
 	"strconv"
 
 	"github.com/chrplr/goxpyriment/apparatus"
@@ -60,13 +61,15 @@ type Retinotopy struct {
 	RunLabel     string
 	StimulusRect *control.FRect // Calculated centered rect
 	Scaling      float64        // Scaling factor
+	LeadInSec    float64        // Blank period kept at the start of the run; < 0 keeps the CSV's own
 }
 
-func NewRetinotopy(exp *control.Experiment, runLabel string, scaling float64) *Retinotopy {
+func NewRetinotopy(exp *control.Experiment, runLabel string, scaling float64, leadInSec float64) *Retinotopy {
 	return &Retinotopy{
-		Exp:      exp,
-		RunLabel: runLabel,
-		Scaling:  scaling,
+		Exp:       exp,
+		RunLabel:  runLabel,
+		Scaling:   scaling,
+		LeadInSec: leadInSec,
 	}
 }
 
@@ -266,7 +269,43 @@ func (r *Retinotopy) loadOrders(subjID int, runID int) error {
 		r.DotOrder[i-1] = dVal
 	}
 
+	r.trimLeadIn()
+
 	return nil
+}
+
+// trimLeadIn drops most of the blank period every stimulus order begins with.
+// The HCP protocol opens a run with fixation only — 16 s for the bars, 22 s for
+// the wedges and rings — which is a long wait when all one wants is to see the
+// stimuli. -lead-in says how much of it to keep; a negative value keeps the
+// order exactly as the CSV has it, which is what a real scanning session wants,
+// since the frames dropped here are baseline the analysis expects.
+func (r *Retinotopy) trimLeadIn() {
+	if r.LeadInSec < 0 {
+		return
+	}
+	blank := 0
+	for _, m := range r.MaskOrder {
+		if m >= 0 {
+			break
+		}
+		blank++
+	}
+	drop := blank - int(math.Round(r.LeadInSec*FrameRate))
+	if drop <= 0 {
+		return
+	}
+	// The three orders are read frame-by-frame in step, so they are trimmed by
+	// the same amount even though only MaskOrder decided it.
+	r.MaskOrder = r.MaskOrder[drop:]
+	if drop < len(r.PatternOrder) {
+		r.PatternOrder = r.PatternOrder[drop:]
+	}
+	if drop < len(r.DotOrder) {
+		r.DotOrder = r.DotOrder[drop:]
+	}
+	log.Printf("lead-in: dropped %d of the %d blank frames starting %s (%.1fs of %.1fs)",
+		drop, blank, r.RunLabel, float64(drop)/FrameRate, float64(blank)/FrameRate)
 }
 
 func (r *Retinotopy) loadTextureFromBytes(data []byte) (*apparatus.Texture, error) {
@@ -541,6 +580,7 @@ func main() {
 	cliRefreshRate := flag.Float64("refresh-rate", 60, "display refresh rate in Hz (pre-fills the UI field)")
 	cliFullscreen := flag.Bool("fullscreen", true, "start in fullscreen mode (pre-fills the UI field)")
 	cliDisplay := flag.String("display", "0", "display ID, 0 = primary monitor (pre-fills the UI field)")
+	cliLeadIn := flag.Float64("lead-in", 2, "seconds of the run's opening blank period to keep; negative keeps the full HCP baseline (16s bars, 22s wedges/rings)")
 	// No-op on desktop. In the browser there is no command line: this reads the
 	// flags out of the page URL and forces -headless. See browser_js.go.
 	prepareFlags()
@@ -693,7 +733,7 @@ func main() {
 		}
 
 		// ── Step 4: load stimuli and run ──────────────────────────────────────
-		retino := NewRetinotopy(exp, runLabel, scaling)
+		retino := NewRetinotopy(exp, runLabel, scaling, *cliLeadIn)
 		if err2 := retino.LoadStimuli(exp.SubjectID, runID); err2 != nil {
 			return err2
 		}

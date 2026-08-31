@@ -24,6 +24,13 @@ goreleaser build --snapshot --clean  # uses .goreleaser.yaml
 
 **CLI flags:** `-r <run_id 1-6>`, `-s <subject_id>`, `-age`, `-gender`, `-handedness`, `-screen-width <cm>`, `-viewing-distance <cm>`, `-refresh-rate <Hz>`, `-fullscreen`, `-display <id, 0 = primary>`. All of them pre-fill the info dialog, and `-headless` (from goxpyriment) skips the dialog and returns those values directly. Note that `GetParticipantInfo` prefers a value cached in `~/.cache/goxpyriment/last_session.json` over a flag-supplied default (every field except `subject_id`), so interactively a flag only sets what the dialog starts from. Under `-headless` there is no dialog to correct it, so flags passed explicitly on the command line override the cache — see the `flag.Visit` block in `main()` — and each override is logged.
 
+`-lead-in <seconds>` is the one flag that is not a dialog field: each stimulus
+order begins with a fixation-only baseline (16 s for the bars, 22 s for the
+wedges and rings) before the first pattern, and `trimLeadIn` drops all but the
+requested seconds of it, trimming `MaskOrder`/`PatternOrder`/`DotOrder` together
+so they stay in step. Default 2 s; a negative value keeps the CSV's own lead-in,
+which is what a real scanning session needs.
+
 **Run types (1–6):** bars (×2), CCW wedge, CW wedge, expanding circles, contracting circles.
 
 ## Architecture
