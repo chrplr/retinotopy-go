@@ -287,13 +287,29 @@ func (r *Retinotopy) loadTextureFromBytes(data []byte) (*apparatus.Texture, erro
 		}
 	}
 
-	surface, err := apparatus.CreateSurfaceFrom(w, h, apparatus.PIXELFORMAT_RGBA32, rgba.Pix, w*4)
+	// Upload straight into a texture rather than going through a surface.
+	// SDL_CreateSurfaceFrom's js binding is broken in the go-sdl3-wasm fork —
+	// it hands a 64-bit value to a JS call that wants a Number, so the browser
+	// build died here with "Cannot convert a BigInt value to a number" while
+	// loading the fixation grid. This path is the one the combined stimulus
+	// texture already uses, it is one SDL call shorter, and it behaves
+	// identically on desktop.
+	tex, err := r.Exp.Screen.Renderer.CreateTexture(
+		apparatus.PIXELFORMAT_RGBA32, apparatus.TEXTUREACCESS_STREAMING, w, h)
 	if err != nil {
 		return nil, err
 	}
-	defer surface.Destroy()
-
-	return r.Exp.Screen.Renderer.CreateTextureFromSurface(surface)
+	if err := tex.Update(nil, rgba.Pix, int32(w*4)); err != nil {
+		tex.Destroy()
+		return nil, err
+	}
+	// CreateTextureFromSurface used to infer this from the surface's alpha
+	// channel. The grid is drawn over the stimulus, so it has to blend.
+	if err := tex.SetBlendMode(apparatus.BLENDMODE_BLEND); err != nil {
+		tex.Destroy()
+		return nil, err
+	}
+	return tex, nil
 }
 
 func loadRawRGB(path string) ([]byte, error) {

@@ -63,7 +63,15 @@ Embedded assets in `assets/`:
   `platformPrepareFlags` does this but only inside `NewExperimentFromFlags`,
   which this program does not use.
 
-The bundle is ~135 MB because every stimulus PNG is embedded.
+- **`sdl.CreateSurfaceFrom` is broken on js** in the fork (`Cannot convert a
+  BigInt value to a number`, from `syscall/js.Value.Call`). `loadTextureFromBytes`
+  therefore uploads into a `CreateTexture` + `Update` texture rather than going
+  through a surface — the path the combined stimulus texture already used. Avoid
+  reintroducing `CreateSurfaceFrom`.
+
+The bundle is ~135 MB because every stimulus PNG is embedded. Verified running in
+Chrome: dialog skipped, URL parameters applied, stimuli loaded, fixation grid and
+run loop rendering.
 
 ## Release / CI
 

@@ -157,6 +157,11 @@ Two things make it work, and both are easy to trip over:
   the browser build forces `-headless` and takes its settings from the page URL
   instead (`?s=7&r=3&screen-width=40`). See `browser_js.go`.
 
+A third trap is already worked around: `SDL_CreateSurfaceFrom`'s js binding in
+the fork throws `Cannot convert a BigInt value to a number`, which killed the
+run while loading the fixation grid. `loadTextureFromBytes` now uploads straight
+into a texture instead of building a surface first.
+
 To build and serve the bundle locally:
 
 ```bash
