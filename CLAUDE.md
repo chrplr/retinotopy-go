@@ -31,7 +31,7 @@ goreleaser build --snapshot --clean  # uses .goreleaser.yaml
 Single-package application (`main`) in `retinotopy.go`:
 
 - **`Retinotopy` struct** — holds all experiment state: screen, renderer, textures, loaded stimuli, timing config, data logger.
-- **`LoadStimuli()`** — loads PNG patterns and masks from `assets/stimuli_png/` (embedded via `//go:embed`), fixation grid, and CSV stimulus orders from `assets/StimuliOrder/`.
+- **`LoadStimuli()`** — loads PNG patterns and masks from `assets/patterns/` and `assets/masks/` (embedded via `//go:embed`), fixation grid, and CSV stimulus orders from `assets/StimuliOrder/`.
 - **`Run()`** — main loop: iterates frames, blends pattern + mask textures via `updateCombinedTexture()`, presents on screen, logs timing, detects color-change response (attention task).
 - **`Instructions()`** — shows per-run instruction text and waits for experimenter keypress.
 
@@ -42,8 +42,8 @@ Single-package application (`main`) in `retinotopy.go`:
 ## Assets
 
 Embedded assets in `assets/`:
-- `stimuli_png/patterns/` — 100 checkerboard phase patterns
-- `stimuli_png/masks/{swippingBars,rotatingWedge,expendingCircles}/` — mask sequences per run type
+- `patterns/` — 100 checkerboard phase patterns
+- `masks/{swippingBars,rotatingWedge,expendingCircles}/` — mask sequences per run type
 - `StimuliOrder/maskOrderRetinotopy.csv` + per-subject CSVs — frame-by-frame stimulus order
 - `Inconsolata.ttf`, `fixationGrid.png`, `icons/`
 
