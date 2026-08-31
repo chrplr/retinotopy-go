@@ -21,7 +21,7 @@ builds:
     goarch:
       - amd64
       - arm64
-    main: ./retinotopy.go
+    main: .
     binary: retinotopy
 
   - id: windows
@@ -32,7 +32,7 @@ builds:
     goarch:
       - amd64
       - arm64
-    main: ./retinotopy.go
+    main: .
     binary: retinotopy
 
 archives:

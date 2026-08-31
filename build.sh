@@ -4,7 +4,10 @@
 # Cross-compiles for Linux, macOS, and Windows (amd64 and arm64)
 
 APP_NAME="retinotopy"
-SRC_FILE="retinotopy.go"
+# The whole package, not retinotopy.go alone: prepareFlags lives in
+# browser_notjs.go / browser_js.go, and naming a single file leaves it out
+# ("undefined: prepareFlags").
+SRC_FILE="."
 BUILD_DIR="build"
 
 # Define target platforms: OS/Arch

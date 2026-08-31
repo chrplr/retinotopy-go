@@ -137,7 +137,7 @@ Only needed if you want to modify the code or compile it yourself.
 git clone https://github.com/chrplr/retinotopy-go.git
 cd retinotopy-go
 go mod download
-go run retinotopy.go -s 0 -r 1     # run directly
+go run . -s 0 -r 1     # run directly
 go build -o retinotopy              # build an executable
 ```
 

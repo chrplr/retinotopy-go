@@ -14,7 +14,7 @@ echo "=== Building ${APP_NAME} ${VERSION} Minimal AppImage ==="
 # 1. Build the Go binary (CGO_ENABLED=0 is preferred for portability if possible, 
 # but we saw it segfaulted too. Let's try CGO_ENABLED=0 again now that we are doing minimal)
 echo "--> Compiling Go binary..."
-CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ${APP_NAME}_bin retinotopy.go
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ${APP_NAME}_bin .
 
 # 2. Prepare AppDir
 echo "--> Preparing AppDir..."

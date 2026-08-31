@@ -10,7 +10,7 @@ Go implementation of the HCP 7 Tesla retinotopic mapping experiment. Presents vi
 
 ```bash
 # Run directly (subject 0, run 1)
-go run retinotopy.go -s 0 -r 1
+go run . -s 0 -r 1
 
 # Build executable
 go build -o retinotopy
