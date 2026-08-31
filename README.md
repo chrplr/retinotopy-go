@@ -18,7 +18,9 @@ Christophe Pallier, 05/03/2026 [![DOI](https://zenodo.org/badge/1173914957.svg)]
 
 ---
 
-## 1. Installation (Recommended)
+## 1. Installation from binaries
+
+
 
 Download the latest installer for your operating system directly below. All required files are bundled — no extra software needed.
 
@@ -89,10 +91,6 @@ The six available runs are:
 | `--scaling <f>` | Scale stimulus size (e.g. `1.5` = 150%) | `1.0` |
 | `-assets <path>` | Path to the `assets/` folder | `./assets` |
 
-### Output data
-
-Results are saved as `.xpd` files in a `data/` folder next to the executable, with frame-by-frame timing and response event logs.
-
 ---
 
 ## 4. Building from Source
@@ -102,10 +100,6 @@ Only needed if you want to modify the code or compile it yourself.
 ### Prerequisites
 
 1. **Install Go:** [go.dev/doc/install](https://go.dev/doc/install)
-2. **Install SDL3** (runtime library only — no C compiler or development headers needed):
-   - **Windows:** Download `SDL3.dll` from the [SDL releases page](https://github.com/libsdl-org/SDL/releases) and place it next to the executable.
-   - **macOS:** `brew install sdl3`
-   - **Linux (Debian/Ubuntu):** `sudo apt install libsdl3-0` (or build from source if your distro doesn't package it yet)
 
 ### Build steps
 
@@ -127,7 +121,7 @@ To cross-compile for all platforms at once:
 
 ## See also
 
-- <https://osf.io/bw9ec/overview> (original Python/Expyriment version)
+- <https://osf.io/bw9ec/overview> (original Matlab version)
 - <https://github.com/Goffaux-Lab/psychopy-retinotopy>
 - <https://github.com/hiroshiban/Retinotopy>
 - <https://github.com/egaffincahn/RetinotopicMapping>
