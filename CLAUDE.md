@@ -35,7 +35,7 @@ Single-package application (`main`) in `retinotopy.go`:
 - **`Run()`** — main loop: iterates frames, blends pattern + mask textures via `updateCombinedTexture()`, presents on screen, logs timing, detects color-change response (attention task).
 - **`Instructions()`** — shows per-run instruction text and waits for experimenter keypress.
 
-**goxpyriment** provides: screen/renderer lifecycle, clock/timing, input handling, `.xpd` data logging (results saved to `data/`).
+**goxpyriment** provides: screen/renderer lifecycle, clock/timing, input handling, and CSV data logging (results saved to `$HOME/goxpy_data/`, each run writing a `.csv` plus an `-info.txt` sidecar; override with `exp.SetOutputDirectory()`).
 
 **`Stim-Generators/`** — standalone utilities for regenerating PNG assets (bar checkerboards, wedges, eccentric checkerboards). Not imported by main; run independently if assets need to be regenerated.
 
