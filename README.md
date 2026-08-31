@@ -64,7 +64,9 @@ If you prefer not to use an installer, download a raw binary archive from the [R
 
 ### Choosing a run
 
-Launch the app with a subject ID (`-s`) and run number (`-r`):
+A setup dialog opens first, where the subject ID, run and monitor geometry are
+entered. Flags on the command line pre-fill it, so a session can be prepared in
+one line and confirmed with a click:
 
 ```
 retinotopy -s 1 -r 3
@@ -83,13 +85,34 @@ The six available runs are:
 
 ### All command-line options
 
+Each flag sets the starting value of one dialog field; all of them can still be
+changed in the dialog itself.
+
 | Flag | Description | Default |
 | :--- | :--- | :--- |
-| `-s <id>` | Subject ID (used for data logging and stimulus order) | `0` |
-| `-r <id>` | Run number (1–6, see above) | `1` |
-| `-d` | Development mode: runs in a 900×900 window instead of fullscreen | off |
-| `--scaling <f>` | Scale stimulus size (e.g. `1.5` = 150%) | `1.0` |
-| `-assets <path>` | Path to the `assets/` folder | `./assets` |
+| `-r <1-6>` | Run number (see above) | `1` |
+| `-s <id>` | Subject ID (selects the per-subject stimulus order, and names the results file) | *(empty)* |
+| `-age <text>` | Participant age | *(empty)* |
+| `-gender <text>` | Participant gender (M / F / NB) | *(empty)* |
+| `-handedness <R\|L>` | Participant handedness | `R` |
+| `-screen-width <cm>` | Screen width in centimetres | `30` |
+| `-viewing-distance <cm>` | Viewing distance in centimetres | `50` |
+| `-refresh-rate <Hz>` | Display refresh rate | `60` |
+| `-display <id>` | Monitor to open on, `0` = primary | `0` |
+| `-fullscreen` | Start fullscreen; `-fullscreen=false` gives a 1024×768 window | `true` |
+| `-headless` | Skip the dialog and run with the values above | off |
+
+Screen width and viewing distance are what set the stimulus size: the
+checkerboard is scaled so its maximum eccentricity is 15° of visual angle,
+clamped so that it still fits on screen. The resulting scaling and eccentricity
+are recorded alongside the data, so measure them rather than leaving the
+defaults.
+
+**Remembered between sessions.** Every field except the subject ID is cached in
+`~/.cache/goxpyriment/last_session.json` and restored ahead of a flag's default,
+so the dialog reopens where the last session left it. Under `-headless` there is
+no dialog to correct that, so any flag given explicitly on the command line
+overrides the cached value, and each override is logged.
 
 ---
 
